@@ -41,11 +41,26 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     /** This will be used to pass in the transformation matrix. */
     private int mMVPMatrixHandle;
 
+    /** This will be used to pass in the modelview matrix. */
+    private int mMVMatrixHandle;
+
     /** This will be used to pass in model position information. */
     private int mPositionHandle;
 
     /** This will be used to pass in model color information. */
     private int mColorHandle;
+
+    /** This will be used to pass in model normal information. */
+    private int mNormalHandle;
+
+    /** Size of the position data in elements. */
+    private final int mPositionDataSize = 3;
+
+    /** Size of the color data in elements. */
+    private final int mColorDataSize = 4;
+
+    /** Size of the normal data in elements. */
+    private final int mNormalDataSize = 3;
 
     private Star star;
 
@@ -55,11 +70,17 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     }
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        // Set the background clear color to red. The first component is
+        // Set the background clear color to gray. The first component is
         // red, the second is green, the third is blue, and the last
         // component is alpha, which we don't use in this lesson.
         // Set the background clear color to gray.
         GLES20.glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
+
+        // Use culling to remove back faces.
+        GLES20.glEnable(GLES20.GL_CULL_FACE);
+
+        // Enable depth testing
+        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
         // Position the eye behind the origin.
         final float eyeX = 0.0f;
@@ -89,8 +110,10 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         );
         // Set program handles. These will later be used to pass in values to the program.
         mMVPMatrixHandle = GLES20.glGetUniformLocation(programHandle, "u_MVPMatrix");
+        mMVMatrixHandle = GLES20.glGetUniformLocation(programHandle, "u_MVMatrix");
         mPositionHandle = GLES20.glGetAttribLocation(programHandle, "a_Position");
         mColorHandle = GLES20.glGetAttribLocation(programHandle, "a_Color");
+        mNormalHandle = GLES20.glGetAttribLocation(programHandle, "a_Normal");
 
         // Tell OpenGL to use this program when rendering.
         GLES20.glUseProgram(programHandle);
@@ -145,22 +168,31 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
 
     private void drawStar() {
         // Pass in the position information
-        GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false,
+        GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false,
                 0, star.getVertexBuffer());
         GLES20.glEnableVertexAttribArray(mPositionHandle);
 
         // Pass in the color information
-        GLES20.glVertexAttribPointer(mColorHandle, 4, GLES20.GL_FLOAT, false,
+        GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false,
                 0, star.getColorBuffer());
         GLES20.glEnableVertexAttribArray(mColorHandle);
+
+        // Pass in the normal information
+        GLES20.glVertexAttribPointer(mNormalHandle, mNormalDataSize, GLES20.GL_FLOAT, false,
+                0, star.getNormalBuffer());
+        GLES20.glEnableVertexAttribArray(mNormalHandle);
 
         // This multiplies the view matrix by the model matrix, and stores the result in the MVP matrix
         // (which currently contains model * view).
         Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+        // Pass in the modelview matrix.
+        GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVPMatrix, 0);
+
         // This multiplies the modelview matrix by the projection matrix, and stores the result in the MVP matrix
         // (which now contains model * view * projection).
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
+
         GLES20.glDrawElements(GLES20.GL_TRIANGLES, star.getIndices().length, GLES20.GL_UNSIGNED_SHORT, star.getIndexBuffer());
     }
 }
