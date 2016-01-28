@@ -10,6 +10,7 @@ import com.example.yang.openglobj.R;
 import com.example.yang.openglobj.model.Star;
 import com.example.yang.openglobj.util.ShaderHelper;
 import com.example.yang.openglobj.util.TextResourceReader;
+import com.example.yang.openglobj.util.TextureHelper;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -53,6 +54,12 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     /** This will be used to pass in model normal information. */
     private int mNormalHandle;
 
+    /** This will be used to pass in the texture. */
+    private int mTextureUniformHandle;
+
+    /** This will be used to pass in model texture coordinate information. */
+    private int mTextureCoordinateHandle;
+
     /** Size of the position data in elements. */
     private final int mPositionDataSize = 3;
 
@@ -61,6 +68,9 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
 
     /** Size of the normal data in elements. */
     private final int mNormalDataSize = 3;
+
+    /** Size of the texture coordinate data in elements. */
+    private final int mTextureCoordinateDataSize = 2;
 
     private Star star;
 
@@ -85,7 +95,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         // Position the eye behind the origin.
         final float eyeX = 0.0f;
         final float eyeY = 0.0f;
-        final float eyeZ = 1.5f;
+        final float eyeZ = -0.5f;
 
         // We are looking toward the distance
         final float lookX = 0.0f;
@@ -108,15 +118,28 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
                 ShaderHelper.compileFragmentShader(
                     TextResourceReader.readTextFileFromResource(mContext, R.raw.simple_fragment_shader))
         );
+
+        // Tell OpenGL to use this program when rendering.
+        GLES20.glUseProgram(programHandle);
+        // Load the texture
+        int mTextureDataHandle = TextureHelper.loadTexture(mContext, R.drawable.bumpy_bricks_public_domain);
         // Set program handles. These will later be used to pass in values to the program.
         mMVPMatrixHandle = GLES20.glGetUniformLocation(programHandle, "u_MVPMatrix");
         mMVMatrixHandle = GLES20.glGetUniformLocation(programHandle, "u_MVMatrix");
         mPositionHandle = GLES20.glGetAttribLocation(programHandle, "a_Position");
         mColorHandle = GLES20.glGetAttribLocation(programHandle, "a_Color");
         mNormalHandle = GLES20.glGetAttribLocation(programHandle, "a_Normal");
+        mTextureUniformHandle = GLES20.glGetUniformLocation(programHandle, "u_Texture");
+        mTextureCoordinateHandle = GLES20.glGetAttribLocation(programHandle, "a_TexCoordinate");
 
-        // Tell OpenGL to use this program when rendering.
-        GLES20.glUseProgram(programHandle);
+        // Set the active texture unit to texture unit 0.
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+
+        // Bind the texture to this unit.
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureDataHandle);
+
+        // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
+        GLES20.glUniform1i(mTextureUniformHandle, 0);
     }
 
     /**
@@ -182,6 +205,11 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
                 0, star.getNormalBuffer());
         GLES20.glEnableVertexAttribArray(mNormalHandle);
 
+        // Pass in the texture coordinate information
+        GLES20.glVertexAttribPointer(mTextureCoordinateHandle, mTextureCoordinateDataSize, GLES20.GL_FLOAT, false,
+                0, star.getTextureBuffer());
+        GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
+
         // This multiplies the view matrix by the model matrix, and stores the result in the MVP matrix
         // (which currently contains model * view).
         Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
@@ -193,6 +221,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
 
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, star.getIndices().length, GLES20.GL_UNSIGNED_SHORT, star.getIndexBuffer());
+        //GLES20.glDrawElements(GLES20.GL_TRIANGLES, star.getIndices().length, GLES20.GL_UNSIGNED_SHORT, star.getIndexBuffer());
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
     }
 }

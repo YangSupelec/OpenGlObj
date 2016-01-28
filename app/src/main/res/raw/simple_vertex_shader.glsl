@@ -2,17 +2,18 @@
     uniform mat4 u_MVMatrix;
 
     attribute vec4 a_Position;
-    attribute vec4 a_Color;
+    attribute vec2 a_TexCoordinate;
     attribute vec3 a_Normal;
+    attribute vec4 a_Color;
  
+    varying vec2 v_TexCoordinate;
     varying vec4 v_Color;
-    varying vec3 v_Position;
     varying vec3 v_Normal;
  
     void main()
     {
-        // Transform the vertex into eye space.
-        v_Position = vec3(u_MVMatrix * a_Position);
+        // Pass through the texture coords.
+        v_TexCoordinate = a_TexCoordinate;
         // Pass through the color.
         v_Color = a_Color;
         // Transform the normal's orientation into eye space.

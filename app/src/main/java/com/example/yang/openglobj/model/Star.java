@@ -9,10 +9,6 @@ import java.nio.ShortBuffer;
  * Created by yang on 28/01/16.
  */
 public class Star {
-    static final float X = .525731112119133606f;
-    static final float Z = .850650808352039932f;
-
-
     /** How many bytes per float. */
     private final int BYTES_PER_FLOAT = 4;
     /** How many bytes per float. */
@@ -20,28 +16,205 @@ public class Star {
 
     // The colors mapped to the vertices.
     float[] colors = {
-            0f, 0f, 0f, 1f,
-            0f, 0f, 1f, 1f,
-            0f, 1f, 0f, 1f,
-            0f, 1f, 1f, 1f,
-            1f, 0f, 0f, 1f,
-            1f, 0f, 1f, 1f,
-            1f, 1f, 0f, 1f,
-            1f, 1f, 1f, 1f,
-            1f, 0f, 0f, 1f,
-            0f, 1f, 0f, 1f,
-            0f, 0f, 1f, 1f,
-            1f, 0f, 1f, 1f
+            // Front face (red)
+            1.0f, 0.0f, 0.0f, 1.0f,
+            1.0f, 0.0f, 0.0f, 1.0f,
+            1.0f, 0.0f, 0.0f, 1.0f,
+            1.0f, 0.0f, 0.0f, 1.0f,
+            1.0f, 0.0f, 0.0f, 1.0f,
+            1.0f, 0.0f, 0.0f, 1.0f,
 
+            // Right face (green)
+            0.0f, 1.0f, 0.0f, 1.0f,
+            0.0f, 1.0f, 0.0f, 1.0f,
+            0.0f, 1.0f, 0.0f, 1.0f,
+            0.0f, 1.0f, 0.0f, 1.0f,
+            0.0f, 1.0f, 0.0f, 1.0f,
+            0.0f, 1.0f, 0.0f, 1.0f,
+
+            // Back face (blue)
+            0.0f, 0.0f, 1.0f, 1.0f,
+            0.0f, 0.0f, 1.0f, 1.0f,
+            0.0f, 0.0f, 1.0f, 1.0f,
+            0.0f, 0.0f, 1.0f, 1.0f,
+            0.0f, 0.0f, 1.0f, 1.0f,
+            0.0f, 0.0f, 1.0f, 1.0f,
+
+            // Left face (yellow)
+            1.0f, 1.0f, 0.0f, 1.0f,
+            1.0f, 1.0f, 0.0f, 1.0f,
+            1.0f, 1.0f, 0.0f, 1.0f,
+            1.0f, 1.0f, 0.0f, 1.0f,
+            1.0f, 1.0f, 0.0f, 1.0f,
+            1.0f, 1.0f, 0.0f, 1.0f,
+
+            // Top face (cyan)
+            0.0f, 1.0f, 1.0f, 1.0f,
+            0.0f, 1.0f, 1.0f, 1.0f,
+            0.0f, 1.0f, 1.0f, 1.0f,
+            0.0f, 1.0f, 1.0f, 1.0f,
+            0.0f, 1.0f, 1.0f, 1.0f,
+            0.0f, 1.0f, 1.0f, 1.0f,
+
+            // Bottom face (magenta)
+            1.0f, 0.0f, 1.0f, 1.0f,
+            1.0f, 0.0f, 1.0f, 1.0f,
+            1.0f, 0.0f, 1.0f, 1.0f,
+            1.0f, 0.0f, 1.0f, 1.0f,
+            1.0f, 0.0f, 1.0f, 1.0f,
+            1.0f, 0.0f, 1.0f, 1.0f
     };
 
     // The normal mapped to the vertices
-    float[] normals = {};
+    float[] normals = {
+            // Front face
+            0.0f, 0.0f, 1.0f,
+            0.0f, 0.0f, 1.0f,
+            0.0f, 0.0f, 1.0f,
+            0.0f, 0.0f, 1.0f,
+            0.0f, 0.0f, 1.0f,
+            0.0f, 0.0f, 1.0f,
+
+            // Right face
+            1.0f, 0.0f, 0.0f,
+            1.0f, 0.0f, 0.0f,
+            1.0f, 0.0f, 0.0f,
+            1.0f, 0.0f, 0.0f,
+            1.0f, 0.0f, 0.0f,
+            1.0f, 0.0f, 0.0f,
+
+            // Back face
+            0.0f, 0.0f, -1.0f,
+            0.0f, 0.0f, -1.0f,
+            0.0f, 0.0f, -1.0f,
+            0.0f, 0.0f, -1.0f,
+            0.0f, 0.0f, -1.0f,
+            0.0f, 0.0f, -1.0f,
+
+            // Left face
+            -1.0f, 0.0f, 0.0f,
+            -1.0f, 0.0f, 0.0f,
+            -1.0f, 0.0f, 0.0f,
+            -1.0f, 0.0f, 0.0f,
+            -1.0f, 0.0f, 0.0f,
+            -1.0f, 0.0f, 0.0f,
+
+            // Top face
+            0.0f, 1.0f, 0.0f,
+            0.0f, 1.0f, 0.0f,
+            0.0f, 1.0f, 0.0f,
+            0.0f, 1.0f, 0.0f,
+            0.0f, 1.0f, 0.0f,
+            0.0f, 1.0f, 0.0f,
+
+            // Bottom face
+            0.0f, -1.0f, 0.0f,
+            0.0f, -1.0f, 0.0f,
+            0.0f, -1.0f, 0.0f,
+            0.0f, -1.0f, 0.0f,
+            0.0f, -1.0f, 0.0f,
+            0.0f, -1.0f, 0.0f
+    };
+
+    // The texture coords mapped to the vertices
+    float[] texCoords = {
+            // Front face
+            0.0f, 0.0f,
+            0.0f, 1.0f,
+            1.0f, 0.0f,
+            0.0f, 1.0f,
+            1.0f, 1.0f,
+            1.0f, 0.0f,
+
+            // Right face
+            0.0f, 0.0f,
+            0.0f, 1.0f,
+            1.0f, 0.0f,
+            0.0f, 1.0f,
+            1.0f, 1.0f,
+            1.0f, 0.0f,
+
+            // Back face
+            0.0f, 0.0f,
+            0.0f, 1.0f,
+            1.0f, 0.0f,
+            0.0f, 1.0f,
+            1.0f, 1.0f,
+            1.0f, 0.0f,
+
+            // Left face
+            0.0f, 0.0f,
+            0.0f, 1.0f,
+            1.0f, 0.0f,
+            0.0f, 1.0f,
+            1.0f, 1.0f,
+            1.0f, 0.0f,
+
+            // Top face
+            0.0f, 0.0f,
+            0.0f, 1.0f,
+            1.0f, 0.0f,
+            0.0f, 1.0f,
+            1.0f, 1.0f,
+            1.0f, 0.0f,
+
+            // Bottom face
+            0.0f, 0.0f,
+            0.0f, 1.0f,
+            1.0f, 0.0f,
+            0.0f, 1.0f,
+            1.0f, 1.0f,
+            1.0f, 0.0f
+    };
 
     float vertices[] = new float[]{
-            -X, 0.0f, Z, X, 0.0f, Z, -X, 0.0f, -Z, X, 0.0f, -Z,
-            0.0f, Z, X, 0.0f, Z, -X, 0.0f, -Z, X, 0.0f, -Z, -X,
-            Z, X, 0.0f, -Z, X, 0.0f, Z, -X, 0.0f, -Z, -X, 0.0f
+            // Front face
+            -1.0f, 1.0f, 1.0f,
+            -1.0f, -1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            -1.0f, -1.0f, 1.0f,
+            1.0f, -1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+
+            // Right face
+            1.0f, 1.0f, 1.0f,
+            1.0f, -1.0f, 1.0f,
+            1.0f, 1.0f, -1.0f,
+            1.0f, -1.0f, 1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, 1.0f, -1.0f,
+
+            // Back face
+            1.0f, 1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
+
+            // Left face
+            -1.0f, 1.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f,
+            -1.0f, 1.0f, 1.0f,
+            -1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, 1.0f,
+            -1.0f, 1.0f, 1.0f,
+
+            // Top face
+            -1.0f, 1.0f, -1.0f,
+            -1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, -1.0f,
+            -1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, -1.0f,
+
+            // Bottom face
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, 1.0f,
+            -1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, 1.0f,
+            -1.0f, -1.0f, 1.0f,
+            -1.0f, -1.0f, -1.0f,
     };
 
     public short[] getIndices() {
@@ -79,6 +252,12 @@ public class Star {
 
     private FloatBuffer normalBuffer;
 
+    public FloatBuffer getTextureBuffer() {
+        return textureBuffer;
+    }
+
+    private FloatBuffer textureBuffer;
+
     public Star() {
         ByteBuffer vbb = ByteBuffer.allocateDirect(vertices.length * BYTES_PER_FLOAT);
         vbb.order(ByteOrder.nativeOrder());
@@ -103,5 +282,11 @@ public class Star {
         normalBuffer = nbb.asFloatBuffer();
         normalBuffer.put(normals);
         normalBuffer.position(0);
+
+        ByteBuffer tbb = ByteBuffer.allocateDirect(texCoords.length * BYTES_PER_FLOAT);
+        tbb.order(ByteOrder.nativeOrder());
+        textureBuffer = tbb.asFloatBuffer();
+        textureBuffer.put(texCoords);
+        textureBuffer.position(0);
     }
 }
