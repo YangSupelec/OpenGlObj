@@ -1,4 +1,4 @@
-package com.example.yang.openglobj;
+package com.example.yang.openglobj.phone;
 
 import android.app.ActivityManager;
 import android.content.Context;
