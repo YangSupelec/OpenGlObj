@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
             glSurfaceView.setEGLContextClientVersion(2);
 
             // Assign our renderer.
-            glSurfaceView.setRenderer(new BasicRenderer());
+            glSurfaceView.setRenderer(new BasicRenderer(this));
             rendererSet = true;
         }
         setContentView(glSurfaceView);
