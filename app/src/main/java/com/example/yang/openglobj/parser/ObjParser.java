@@ -45,7 +45,6 @@ public class ObjParser {
     private float[] aVertices;
     private float[] aTexCoords;
     private float[] aNormals;
-    private float[] aColors;
     private int[] aIndices;
 
     public ObjParser(File file) {
@@ -173,12 +172,11 @@ public class ObjParser {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        
         int i;
         aVertices = new float[currObjIndexData.vertexIndices.size() * 3];
         aTexCoords = new float[currObjIndexData.texCoordIndices.size() * 2];
         aNormals = new float[currObjIndexData.normalIndices.size() * 3];
-        aColors = new float[currObjIndexData.colorIndices.size() * 4];
         aIndices = new int[currObjIndexData.vertexIndices.size()];
 
         for (i = 0; i < currObjIndexData.vertexIndices.size(); ++i) {
@@ -198,14 +196,6 @@ public class ObjParser {
             aTexCoords[ti] = texCoords.get(texCoordIndex);
             aTexCoords[ti + 1] = texCoords.get(texCoordIndex + 1);
         }
-        for (i = 0; i < currObjIndexData.colorIndices.size(); ++i) {
-            int colorIndex = currObjIndexData.colorIndices.get(i) * 4;
-            int ti = i * 4;
-            aTexCoords[ti] = texCoords.get(colorIndex);
-            aTexCoords[ti + 1] = texCoords.get(colorIndex + 1);
-            aTexCoords[ti + 2] = texCoords.get(colorIndex + 2);
-            aTexCoords[ti + 3] = texCoords.get(colorIndex + 3);
-        }
         for (i = 0; i < currObjIndexData.normalIndices.size(); ++i) {
             int normalIndex = currObjIndexData.normalIndices.get(i) * 3;
             int ni = i * 3;
@@ -218,13 +208,11 @@ public class ObjParser {
     protected class ObjIndexData {
         public ArrayList<Integer> vertexIndices;
         public ArrayList<Integer> texCoordIndices;
-        public ArrayList<Integer> colorIndices;
         public ArrayList<Integer> normalIndices;
 
         public ObjIndexData() {
             vertexIndices = new ArrayList<Integer>();
             texCoordIndices = new ArrayList<Integer>();
-            colorIndices = new ArrayList<Integer>();
             normalIndices = new ArrayList<Integer>();
         }
     }
