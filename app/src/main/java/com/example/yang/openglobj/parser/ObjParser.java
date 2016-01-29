@@ -172,7 +172,6 @@ public class ObjParser {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
         int i;
         aVertices = new float[currObjIndexData.vertexIndices.size() * 3];
         aTexCoords = new float[currObjIndexData.texCoordIndices.size() * 2];
@@ -180,6 +179,7 @@ public class ObjParser {
         aIndices = new int[currObjIndexData.vertexIndices.size()];
 
         for (i = 0; i < currObjIndexData.vertexIndices.size(); ++i) {
+            // handle position info
             int faceIndex = currObjIndexData.vertexIndices.get(i) * 3;
             int vertexIndex = i * 3;
             try {
@@ -191,12 +191,13 @@ public class ObjParser {
                 e.printStackTrace();
             }
 
+            // handle texture coords info
             int texCoordIndex = currObjIndexData.texCoordIndices.get(i) * 2;
             int ti = i * 2;
             aTexCoords[ti] = texCoords.get(texCoordIndex);
             aTexCoords[ti + 1] = texCoords.get(texCoordIndex + 1);
-        }
-        for (i = 0; i < currObjIndexData.normalIndices.size(); ++i) {
+
+            // handle normal info
             int normalIndex = currObjIndexData.normalIndices.get(i) * 3;
             int ni = i * 3;
             aNormals[ni] = normals.get(normalIndex);
