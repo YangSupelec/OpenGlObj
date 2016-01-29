@@ -1,16 +1,20 @@
 package com.example.yang.openglobj.renderer;
 
-import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
-import android.os.SystemClock;
+import android.util.Log;
 
 import com.example.yang.openglobj.R;
-import com.example.yang.openglobj.model.Star;
+import com.example.yang.openglobj.phone.MainActivity;
+import com.example.yang.openglobj.util.ErrorHandler;
 import com.example.yang.openglobj.util.ShaderHelper;
 import com.example.yang.openglobj.util.TextResourceReader;
-import com.example.yang.openglobj.util.TextureHelper;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -19,65 +23,135 @@ import javax.microedition.khronos.opengles.GL10;
  * Created by yang on 28/01/16.
  */
 public class BasicRenderer implements GLSurfaceView.Renderer {
-    private final Context mContext;
+    /**
+     * Used for debug logs.
+     */
+    private static final String TAG = "LessonEightRenderer";
 
     /**
-     * Store the view matrix. This can be thought of as our camera. This matrix transforms world space to eye space;
-     * it positions things relative to our eye.
+     * References to other main objects.
      */
-    private float[] mViewMatrix = new float[16];
+    private final MainActivity mainActivity;
+    private final ErrorHandler errorHandler;
 
     /**
-     * Store the model matrix. This matrix is used to move models from object space (where each model can be thought
-     * of being located at the center of the universe) to world space.
+     * Store the model matrix. This matrix is used to move models from object
+     * space (where each model can be thought of being located at the center of
+     * the universe) to world space.
      */
-    private float[] mModelMatrix = new float[16];
+    private final float[] modelMatrix = new float[16];
 
-    /** Store the projection matrix. This is used to project the scene onto a 2D viewport. */
-    private float[] mProjectionMatrix = new float[16];
+    /**
+     * Store the view matrix. This can be thought of as our camera. This matrix
+     * transforms world space to eye space; it positions things relative to our
+     * eye.
+     */
+    private final float[] viewMatrix = new float[16];
 
-    /** Allocate storage for the final combined matrix. This will be passed into the shader program. */
-    private float[] mMVPMatrix = new float[16];
+    /**
+     * Store the projection matrix. This is used to project the scene onto a 2D
+     * viewport.
+     */
+    private final float[] projectionMatrix = new float[16];
 
-    /** This will be used to pass in the transformation matrix. */
-    private int mMVPMatrixHandle;
+    /**
+     * Allocate storage for the final combined matrix. This will be passed into
+     * the shader program.
+     */
+    private final float[] mvpMatrix = new float[16];
 
-    /** This will be used to pass in the modelview matrix. */
-    private int mMVMatrixHandle;
+    /**
+     * Additional matrices.
+     */
+    private final float[] accumulatedRotation = new float[16];
+    private final float[] currentRotation = new float[16];
+    private final float[] lightModelMatrix = new float[16];
+    private final float[] temporaryMatrix = new float[16];
 
-    /** This will be used to pass in model position information. */
-    private int mPositionHandle;
 
-    /** This will be used to pass in model color information. */
-    private int mColorHandle;
+    /**
+     * OpenGL handles to our program uniforms.
+     */
+    private int mvpMatrixUniform;
+    private int mvMatrixUniform;
+    private int lightPosUniform;
 
-    /** This will be used to pass in model normal information. */
-    private int mNormalHandle;
+    /**
+     * OpenGL handles to our program attributes.
+     */
+    private int positionAttribute;
+    private int normalAttribute;
+    private int colorAttribute;
 
-    /** This will be used to pass in the texture. */
-    private int mTextureUniformHandle;
+    /**
+     * Identifiers for our uniforms and attributes inside the shaders.
+     */
+    private static final String MVP_MATRIX_UNIFORM = "u_MVPMatrix";
+    private static final String MV_MATRIX_UNIFORM = "u_MVMatrix";
+    private static final String LIGHT_POSITION_UNIFORM = "u_LightPos";
 
-    /** This will be used to pass in model texture coordinate information. */
-    private int mTextureCoordinateHandle;
+    private static final String POSITION_ATTRIBUTE = "a_Position";
+    private static final String NORMAL_ATTRIBUTE = "a_Normal";
+    private static final String COLOR_ATTRIBUTE = "a_Color";
 
-    /** Size of the position data in elements. */
-    private final int mPositionDataSize = 3;
+    /**
+     * Additional constants.
+     */
+    private static final int POSITION_DATA_SIZE_IN_ELEMENTS = 3;
+    private static final int NORMAL_DATA_SIZE_IN_ELEMENTS = 3;
+    private static final int COLOR_DATA_SIZE_IN_ELEMENTS = 4;
 
-    /** Size of the color data in elements. */
-    private final int mColorDataSize = 4;
+    private static final int BYTES_PER_FLOAT = 4;
+    private static final int BYTES_PER_SHORT = 2;
 
-    /** Size of the normal data in elements. */
-    private final int mNormalDataSize = 3;
+    private static final int STRIDE = (POSITION_DATA_SIZE_IN_ELEMENTS + NORMAL_DATA_SIZE_IN_ELEMENTS + COLOR_DATA_SIZE_IN_ELEMENTS)
+            * BYTES_PER_FLOAT;
 
-    /** Size of the texture coordinate data in elements. */
-    private final int mTextureCoordinateDataSize = 2;
+    /**
+     * Used to hold a light centered on the origin in model space. We need a 4th
+     * coordinate so we can get translations to work when we multiply this by
+     * our transformation matrices.
+     */
+    private final float[] lightPosInModelSpace = new float[]{0.0f, 0.0f, 0.0f, 1.0f};
 
-    private Star star;
+    /**
+     * Used to hold the current position of the light in world space (after
+     * transformation via model matrix).
+     */
+    private final float[] lightPosInWorldSpace = new float[4];
 
-    public BasicRenderer(Context context) {
-        mContext = context;
-        star = new Star();
+    /**
+     * Used to hold the transformed position of the light in eye space (after
+     * transformation via modelview matrix)
+     */
+    private final float[] lightPosInEyeSpace = new float[4];
+
+    /**
+     * This is a handle to our cube shading program.
+     */
+    private int program;
+
+    /**
+     * Retain the most recent delta for touch events.
+     */
+    // These still work without volatile, but refreshes are not guaranteed to
+    // happen.
+    public volatile float deltaX;
+    public volatile float deltaY;
+
+    /**
+     * The current heightmap object.
+     */
+    private HeightMap heightMap;
+
+    /**
+     * Initialize the model data.
+     */
+    public BasicRenderer(final MainActivity mainActivity, ErrorHandler errorHandler) {
+        this.mainActivity = mainActivity;
+        this.errorHandler = errorHandler;
     }
+
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         // Set the background clear color to gray. The first component is
@@ -92,7 +166,15 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         // Enable depth testing
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
-        // Position the eye behind the origin.
+        heightMap = new HeightMap();
+
+        // Set the background clear color to black.
+        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+        // Enable depth testing
+        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+
+        // Position the eye in front of the origin.
         final float eyeX = 0.0f;
         final float eyeY = 0.0f;
         final float eyeZ = -0.5f;
@@ -102,44 +184,28 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         final float lookY = 0.0f;
         final float lookZ = -5.0f;
 
-        // Set our up vector. This is where our head would be pointing were we holding the camera.
+        // Set our up vector. This is where our head would be pointing were we
+        // holding the camera.
         final float upX = 0.0f;
         final float upY = 1.0f;
         final float upZ = 0.0f;
 
-        // Set the view matrix. This matrix can be said to represent the camera position.
-        // NOTE: In OpenGL 1, a ModelView matrix is used, which is a combination of a model and
-        // view matrix. In OpenGL 2, we can keep track of these matrices separately if we choose.
-        Matrix.setLookAtM(mViewMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
+        // Set the view matrix. This matrix can be said to represent the camera
+        // position.
+        // NOTE: In OpenGL 1, a ModelView matrix is used, which is a combination
+        // of a model and view matrix. In OpenGL 2, we can keep track of these
+        // matrices separately if we choose.
+        Matrix.setLookAtM(viewMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
 
-        int programHandle = ShaderHelper.linkProgram(
+        program = ShaderHelper.linkProgram(
                 ShaderHelper.compileVertexShader(
-                        TextResourceReader.readTextFileFromResource(mContext, R.raw.simple_vertex_shader)),
+                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.simple_vertex_shader)),
                 ShaderHelper.compileFragmentShader(
-                    TextResourceReader.readTextFileFromResource(mContext, R.raw.simple_fragment_shader))
+                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.simple_fragment_shader))
         );
 
-        // Tell OpenGL to use this program when rendering.
-        GLES20.glUseProgram(programHandle);
-        // Load the texture
-        int mTextureDataHandle = TextureHelper.loadTexture(mContext, R.drawable.bumpy_bricks_public_domain);
-        // Set program handles. These will later be used to pass in values to the program.
-        mMVPMatrixHandle = GLES20.glGetUniformLocation(programHandle, "u_MVPMatrix");
-        mMVMatrixHandle = GLES20.glGetUniformLocation(programHandle, "u_MVMatrix");
-        mPositionHandle = GLES20.glGetAttribLocation(programHandle, "a_Position");
-        mColorHandle = GLES20.glGetAttribLocation(programHandle, "a_Color");
-        mNormalHandle = GLES20.glGetAttribLocation(programHandle, "a_Normal");
-        mTextureUniformHandle = GLES20.glGetUniformLocation(programHandle, "u_Texture");
-        mTextureCoordinateHandle = GLES20.glGetAttribLocation(programHandle, "a_TexCoordinate");
-
-        // Set the active texture unit to texture unit 0.
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-
-        // Bind the texture to this unit.
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureDataHandle);
-
-        // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
-        GLES20.glUniform1i(mTextureUniformHandle, 0);
+        // Initialize the accumulated rotation matrix
+        Matrix.setIdentityM(accumulatedRotation, 0);
     }
 
     /**
@@ -148,27 +214,25 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
      * Android normally restarts an Activity on rotation, and in that case, the
      * renderer will be destroyed and a new one created.
      *
-     * @param width
-     *            The new width, in pixels.
-     * @param height
-     *            The new height, in pixels.
+     * @param width  The new width, in pixels.
+     * @param height The new height, in pixels.
      */
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-        // Set the OpenGL viewport to fill the entire surface.
+        // Set the OpenGL viewport to the same size as the surface.
         GLES20.glViewport(0, 0, width, height);
 
-        // Create a new perspective projection matrix. The height will stay the same
-        // while the width will vary as per aspect ratio.
+        // Create a new perspective projection matrix. The height will stay the
+        // same while the width will vary as per aspect ratio.
         final float ratio = (float) width / height;
         final float left = -ratio;
         final float right = ratio;
         final float bottom = -1.0f;
         final float top = 1.0f;
         final float near = 1.0f;
-        final float far = 10.0f;
+        final float far = 1000.0f;
 
-        Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
+        Matrix.frustumM(projectionMatrix, 0, left, right, bottom, top, near, far);
     }
 
     /**
@@ -177,51 +241,232 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
      */
     @Override
     public void onDrawFrame(GL10 glUnused) {
-        GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
-        // Do a complete rotation every 10 seconds.
-        long time = SystemClock.uptimeMillis() % 10000L;
-        float angleInDegrees = (360.0f / 10000.0f) * ((int) time);
+        // Set our per-vertex lighting program.
+        GLES20.glUseProgram(program);
 
-        // Draw the triangle facing straight on.
-        Matrix.setIdentityM(mModelMatrix, 0);
-        Matrix.rotateM(mModelMatrix, 0, angleInDegrees, 0.0f, 0.0f, 1.0f);
-        drawStar();
+        // Set program handles for cube drawing.
+        mvpMatrixUniform = GLES20.glGetUniformLocation(program, MVP_MATRIX_UNIFORM);
+        mvMatrixUniform = GLES20.glGetUniformLocation(program, MV_MATRIX_UNIFORM);
+        lightPosUniform = GLES20.glGetUniformLocation(program, LIGHT_POSITION_UNIFORM);
+        positionAttribute = GLES20.glGetAttribLocation(program, POSITION_ATTRIBUTE);
+        normalAttribute = GLES20.glGetAttribLocation(program, NORMAL_ATTRIBUTE);
+        colorAttribute = GLES20.glGetAttribLocation(program, COLOR_ATTRIBUTE);
+
+        // Calculate position of the light. Push into the distance.
+        Matrix.setIdentityM(lightModelMatrix, 0);
+        Matrix.translateM(lightModelMatrix, 0, 0.0f, 7.5f, -8.0f);
+
+        Matrix.multiplyMV(lightPosInWorldSpace, 0, lightModelMatrix, 0, lightPosInModelSpace, 0);
+        Matrix.multiplyMV(lightPosInEyeSpace, 0, viewMatrix, 0, lightPosInWorldSpace, 0);
+
+        // Draw the heightmap.
+        // Translate the heightmap into the screen.
+        Matrix.setIdentityM(modelMatrix, 0);
+        Matrix.translateM(modelMatrix, 0, 0.0f, 0.0f, -12f);
+
+        // Set a matrix that contains the current rotation.
+        Matrix.setIdentityM(currentRotation, 0);
+        Matrix.rotateM(currentRotation, 0, deltaX, 0.0f, 1.0f, 0.0f);
+        Matrix.rotateM(currentRotation, 0, deltaY, 1.0f, 0.0f, 0.0f);
+        deltaX = 0.0f;
+        deltaY = 0.0f;
+
+        // Multiply the current rotation by the accumulated rotation, and then
+        // set the accumulated rotation to the result.
+        Matrix.multiplyMM(temporaryMatrix, 0, currentRotation, 0, accumulatedRotation, 0);
+        System.arraycopy(temporaryMatrix, 0, accumulatedRotation, 0, 16);
+
+        // Rotate the cube taking the overall rotation into account.
+        Matrix.multiplyMM(temporaryMatrix, 0, modelMatrix, 0, accumulatedRotation, 0);
+        System.arraycopy(temporaryMatrix, 0, modelMatrix, 0, 16);
+
+        // This multiplies the view matrix by the model matrix, and stores
+        // the result in the MVP matrix
+        // (which currently contains model * view).
+        Matrix.multiplyMM(mvpMatrix, 0, viewMatrix, 0, modelMatrix, 0);
+
+        // Pass in the modelview matrix.
+        GLES20.glUniformMatrix4fv(mvMatrixUniform, 1, false, mvpMatrix, 0);
+
+        // This multiplies the modelview matrix by the projection matrix,
+        // and stores the result in the MVP matrix
+        // (which now contains model * view * projection).
+        Matrix.multiplyMM(temporaryMatrix, 0, projectionMatrix, 0, mvpMatrix, 0);
+        System.arraycopy(temporaryMatrix, 0, mvpMatrix, 0, 16);
+
+        // Pass in the combined matrix.
+        GLES20.glUniformMatrix4fv(mvpMatrixUniform, 1, false, mvpMatrix, 0);
+
+        // Pass in the light position in eye space.
+        GLES20.glUniform3f(lightPosUniform, lightPosInEyeSpace[0], lightPosInEyeSpace[1], lightPosInEyeSpace[2]);
+
+        // Render the heightmap.
+        heightMap.render();
     }
 
-    private void drawStar() {
-        // Pass in the position information
-        GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false,
-                0, star.getVertexBuffer());
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
+    class HeightMap {
+        static final int SIZE_PER_SIDE = 32;
+        static final float MIN_POSITION = -5f;
+        static final float POSITION_RANGE = 10f;
 
-        // Pass in the color information
-        GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false,
-                0, star.getColorBuffer());
-        GLES20.glEnableVertexAttribArray(mColorHandle);
+        final int[] vbo = new int[1];
+        final int[] ibo = new int[1];
 
-        // Pass in the normal information
-        GLES20.glVertexAttribPointer(mNormalHandle, mNormalDataSize, GLES20.GL_FLOAT, false,
-                0, star.getNormalBuffer());
-        GLES20.glEnableVertexAttribArray(mNormalHandle);
+        int indexCount;
 
-        // Pass in the texture coordinate information
-        GLES20.glVertexAttribPointer(mTextureCoordinateHandle, mTextureCoordinateDataSize, GLES20.GL_FLOAT, false,
-                0, star.getTextureBuffer());
-        GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
+        HeightMap() {
+            try {
+                final int floatsPerVertex = POSITION_DATA_SIZE_IN_ELEMENTS + NORMAL_DATA_SIZE_IN_ELEMENTS
+                        + COLOR_DATA_SIZE_IN_ELEMENTS;
+                final int xLength = SIZE_PER_SIDE;
+                final int yLength = SIZE_PER_SIDE;
 
-        // This multiplies the view matrix by the model matrix, and stores the result in the MVP matrix
-        // (which currently contains model * view).
-        Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
-        // Pass in the modelview matrix.
-        GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVPMatrix, 0);
+                final float[] heightMapVertexData = new float[xLength * yLength * floatsPerVertex];
 
-        // This multiplies the modelview matrix by the projection matrix, and stores the result in the MVP matrix
-        // (which now contains model * view * projection).
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
-        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
+                int offset = 0;
 
-        //GLES20.glDrawElements(GLES20.GL_TRIANGLES, star.getIndices().length, GLES20.GL_UNSIGNED_SHORT, star.getIndexBuffer());
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
+                // First, build the data for the vertex buffer
+                for (int y = 0; y < yLength; y++) {
+                    for (int x = 0; x < xLength; x++) {
+                        final float xRatio = x / (float) (xLength - 1);
+
+                        // Build our heightmap from the top down, so that our triangles are counter-clockwise.
+                        final float yRatio = 1f - (y / (float) (yLength - 1));
+
+                        final float xPosition = MIN_POSITION + (xRatio * POSITION_RANGE);
+                        final float yPosition = MIN_POSITION + (yRatio * POSITION_RANGE);
+
+                        // Position
+                        heightMapVertexData[offset++] = xPosition;
+                        heightMapVertexData[offset++] = yPosition;
+                        heightMapVertexData[offset++] = ((xPosition * xPosition) + (yPosition * yPosition)) / 10f;
+
+                        // Cheap normal using a derivative of the function.
+                        // The slope for X will be 2X, for Y will be 2Y.
+                        // Divide by 10 since the position's Z is also divided by 10.
+                        final float xSlope = (2 * xPosition) / 10f;
+                        final float ySlope = (2 * yPosition) / 10f;
+                        // Calculate the normal using the cross product of the slopes.
+                        final float[] planeVectorX = {1f, 0f, xSlope};
+                        final float[] planeVectorY = {0f, 1f, ySlope};
+                        final float[] normalVector = {
+                                (planeVectorX[1] * planeVectorY[2]) - (planeVectorX[2] * planeVectorY[1]),
+                                (planeVectorX[2] * planeVectorY[0]) - (planeVectorX[0] * planeVectorY[2]),
+                                (planeVectorX[0] * planeVectorY[1]) - (planeVectorX[1] * planeVectorY[0])};
+
+                        // Normalize the normal
+                        final float length = Matrix.length(normalVector[0], normalVector[1], normalVector[2]);
+
+                        heightMapVertexData[offset++] = normalVector[0] / length;
+                        heightMapVertexData[offset++] = normalVector[1] / length;
+                        heightMapVertexData[offset++] = normalVector[2] / length;
+
+                        // Add some fancy colors.
+                        heightMapVertexData[offset++] = xRatio;
+                        heightMapVertexData[offset++] = yRatio;
+                        heightMapVertexData[offset++] = 0.5f;
+                        heightMapVertexData[offset++] = 1f;
+                    }
+                }
+
+                // Now build the index data
+                final int numStripsRequired = yLength - 1;
+                final int numDegensRequired = 2 * (numStripsRequired - 1);
+                final int verticesPerStrip = 2 * xLength;
+
+                final short[] heightMapIndexData = new short[(verticesPerStrip * numStripsRequired) + numDegensRequired];
+
+                offset = 0;
+                for (int y = 0; y < yLength - 1; y++) {
+                    if (y > 0) {
+                        // Degenerate begin: repeat first vertex
+                        heightMapIndexData[offset++] = (short) (y * yLength);
+                    }
+
+                    for (int x = 0; x < xLength; x++) {
+                        // One part of the strip
+                        heightMapIndexData[offset++] = (short) ((y * yLength) + x);
+                        heightMapIndexData[offset++] = (short) (((y + 1) * yLength) + x);
+                    }
+
+                    if (y < yLength - 2) {
+                        // Degenerate end: repeat last vertex
+                        heightMapIndexData[offset++] = (short) (((y + 1) * yLength) + (xLength - 1));
+                    }
+                }
+
+                indexCount = heightMapIndexData.length;
+
+                final FloatBuffer heightMapVertexDataBuffer = ByteBuffer
+                        .allocateDirect(heightMapVertexData.length * BYTES_PER_FLOAT).order(ByteOrder.nativeOrder())
+                        .asFloatBuffer();
+                heightMapVertexDataBuffer.put(heightMapVertexData).position(0);
+
+                final ShortBuffer heightMapIndexDataBuffer = ByteBuffer
+                        .allocateDirect(heightMapIndexData.length * BYTES_PER_SHORT).order(ByteOrder.nativeOrder())
+                        .asShortBuffer();
+                heightMapIndexDataBuffer.put(heightMapIndexData).position(0);
+
+                GLES20.glGenBuffers(1, vbo, 0);
+                GLES20.glGenBuffers(1, ibo, 0);
+                if (vbo[0] > 0 && ibo[0] > 0) {
+                    GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo[0]);
+                    GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, heightMapVertexDataBuffer.capacity() * BYTES_PER_FLOAT,
+                            heightMapVertexDataBuffer, GLES20.GL_STATIC_DRAW);
+
+                    GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, ibo[0]);
+                    GLES20.glBufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, heightMapIndexDataBuffer.capacity()
+                            * BYTES_PER_SHORT, heightMapIndexDataBuffer, GLES20.GL_STATIC_DRAW);
+
+                    GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+                    GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
+                } else {
+                    errorHandler.handleError(ErrorHandler.ErrorType.BUFFER_CREATION_ERROR, "glGenBuffers");
+                }
+            } catch (Throwable t) {
+                Log.w(TAG, t);
+                errorHandler.handleError(ErrorHandler.ErrorType.BUFFER_CREATION_ERROR, t.getLocalizedMessage());
+            }
+        }
+
+        void render() {
+            if (vbo[0] > 0 && ibo[0] > 0) {
+                GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo[0]);
+
+                // Bind Attributes
+                GLES20.glVertexAttribPointer(positionAttribute, POSITION_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false,
+                        STRIDE, 0);
+                GLES20.glEnableVertexAttribArray(positionAttribute);
+
+                GLES20.glVertexAttribPointer(normalAttribute, NORMAL_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false,
+                        STRIDE, POSITION_DATA_SIZE_IN_ELEMENTS * BYTES_PER_FLOAT);
+                GLES20.glEnableVertexAttribArray(normalAttribute);
+
+                GLES20.glVertexAttribPointer(colorAttribute, COLOR_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false,
+                        STRIDE, (POSITION_DATA_SIZE_IN_ELEMENTS + NORMAL_DATA_SIZE_IN_ELEMENTS) * BYTES_PER_FLOAT);
+                GLES20.glEnableVertexAttribArray(colorAttribute);
+
+                // Draw
+                GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, ibo[0]);
+                GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, indexCount, GLES20.GL_UNSIGNED_SHORT, 0);
+
+                GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+                GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
+            }
+        }
+
+        void release() {
+            if (vbo[0] > 0) {
+                GLES20.glDeleteBuffers(vbo.length, vbo, 0);
+                vbo[0] = 0;
+            }
+
+            if (ibo[0] > 0) {
+                GLES20.glDeleteBuffers(ibo.length, ibo, 0);
+                ibo[0] = 0;
+            }
+        }
     }
 }
