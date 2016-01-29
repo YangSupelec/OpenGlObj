@@ -1,292 +1,101 @@
 package com.example.yang.openglobj.model;
 
+import android.content.res.Resources;
+import android.opengl.GLES20;
+
+import com.example.yang.openglobj.R;
+import com.example.yang.openglobj.parser.ObjParser;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
 
 /**
  * Created by yang on 28/01/16.
  */
-public class Star {
-    /** How many bytes per float. */
-    private final int BYTES_PER_FLOAT = 4;
-    /** How many bytes per float. */
-    private final int BYTES_PER_SHORT = 2;
+public class Star extends BaseObject3D {
 
-    // The colors mapped to the vertices.
-    float[] colors = {
-            // Front face (red)
-            1.0f, 0.0f, 0.0f, 1.0f,
-            1.0f, 0.0f, 0.0f, 1.0f,
-            1.0f, 0.0f, 0.0f, 1.0f,
-            1.0f, 0.0f, 0.0f, 1.0f,
-            1.0f, 0.0f, 0.0f, 1.0f,
-            1.0f, 0.0f, 0.0f, 1.0f,
+    int mCubePositionsBufferIdx;
+    int mCubeNormalsBufferIdx;
+    int mCubeTexCoordsBufferIdx;
 
-            // Right face (green)
-            0.0f, 1.0f, 0.0f, 1.0f,
-            0.0f, 1.0f, 0.0f, 1.0f,
-            0.0f, 1.0f, 0.0f, 1.0f,
-            0.0f, 1.0f, 0.0f, 1.0f,
-            0.0f, 1.0f, 0.0f, 1.0f,
-            0.0f, 1.0f, 0.0f, 1.0f,
+    public Star(Resources resources) {
+        ObjParser objParser = new ObjParser(resources, R.raw.generic_avatar_obj);
+        objParser.parse();
+        aVertices = objParser.getVertices();
+        aTexCoords = objParser.getTexCoords();
+        aNormals = objParser.getNormals();
+        aIndices = objParser.getIndices();
 
-            // Back face (blue)
-            0.0f, 0.0f, 1.0f, 1.0f,
-            0.0f, 0.0f, 1.0f, 1.0f,
-            0.0f, 0.0f, 1.0f, 1.0f,
-            0.0f, 0.0f, 1.0f, 1.0f,
-            0.0f, 0.0f, 1.0f, 1.0f,
-            0.0f, 0.0f, 1.0f, 1.0f,
-
-            // Left face (yellow)
-            1.0f, 1.0f, 0.0f, 1.0f,
-            1.0f, 1.0f, 0.0f, 1.0f,
-            1.0f, 1.0f, 0.0f, 1.0f,
-            1.0f, 1.0f, 0.0f, 1.0f,
-            1.0f, 1.0f, 0.0f, 1.0f,
-            1.0f, 1.0f, 0.0f, 1.0f,
-
-            // Top face (cyan)
-            0.0f, 1.0f, 1.0f, 1.0f,
-            0.0f, 1.0f, 1.0f, 1.0f,
-            0.0f, 1.0f, 1.0f, 1.0f,
-            0.0f, 1.0f, 1.0f, 1.0f,
-            0.0f, 1.0f, 1.0f, 1.0f,
-            0.0f, 1.0f, 1.0f, 1.0f,
-
-            // Bottom face (magenta)
-            1.0f, 0.0f, 1.0f, 1.0f,
-            1.0f, 0.0f, 1.0f, 1.0f,
-            1.0f, 0.0f, 1.0f, 1.0f,
-            1.0f, 0.0f, 1.0f, 1.0f,
-            1.0f, 0.0f, 1.0f, 1.0f,
-            1.0f, 0.0f, 1.0f, 1.0f
-    };
-
-    // The normal mapped to the vertices
-    float[] normals = {
-            // Front face
-            0.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f,
-
-            // Right face
-            1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f,
-
-            // Back face
-            0.0f, 0.0f, -1.0f,
-            0.0f, 0.0f, -1.0f,
-            0.0f, 0.0f, -1.0f,
-            0.0f, 0.0f, -1.0f,
-            0.0f, 0.0f, -1.0f,
-            0.0f, 0.0f, -1.0f,
-
-            // Left face
-            -1.0f, 0.0f, 0.0f,
-            -1.0f, 0.0f, 0.0f,
-            -1.0f, 0.0f, 0.0f,
-            -1.0f, 0.0f, 0.0f,
-            -1.0f, 0.0f, 0.0f,
-            -1.0f, 0.0f, 0.0f,
-
-            // Top face
-            0.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f,
-
-            // Bottom face
-            0.0f, -1.0f, 0.0f,
-            0.0f, -1.0f, 0.0f,
-            0.0f, -1.0f, 0.0f,
-            0.0f, -1.0f, 0.0f,
-            0.0f, -1.0f, 0.0f,
-            0.0f, -1.0f, 0.0f
-    };
-
-    // The texture coords mapped to the vertices
-    float[] texCoords = {
-            // Front face
-            0.0f, 0.0f,
-            0.0f, 1.0f,
-            1.0f, 0.0f,
-            0.0f, 1.0f,
-            1.0f, 1.0f,
-            1.0f, 0.0f,
-
-            // Right face
-            0.0f, 0.0f,
-            0.0f, 1.0f,
-            1.0f, 0.0f,
-            0.0f, 1.0f,
-            1.0f, 1.0f,
-            1.0f, 0.0f,
-
-            // Back face
-            0.0f, 0.0f,
-            0.0f, 1.0f,
-            1.0f, 0.0f,
-            0.0f, 1.0f,
-            1.0f, 1.0f,
-            1.0f, 0.0f,
-
-            // Left face
-            0.0f, 0.0f,
-            0.0f, 1.0f,
-            1.0f, 0.0f,
-            0.0f, 1.0f,
-            1.0f, 1.0f,
-            1.0f, 0.0f,
-
-            // Top face
-            0.0f, 0.0f,
-            0.0f, 1.0f,
-            1.0f, 0.0f,
-            0.0f, 1.0f,
-            1.0f, 1.0f,
-            1.0f, 0.0f,
-
-            // Bottom face
-            0.0f, 0.0f,
-            0.0f, 1.0f,
-            1.0f, 0.0f,
-            0.0f, 1.0f,
-            1.0f, 1.0f,
-            1.0f, 0.0f
-    };
-
-    float vertices[] = new float[]{
-            // Front face
-            -1.0f, 1.0f, 1.0f,
-            -1.0f, -1.0f, 1.0f,
-            1.0f, 1.0f, 1.0f,
-            -1.0f, -1.0f, 1.0f,
-            1.0f, -1.0f, 1.0f,
-            1.0f, 1.0f, 1.0f,
-
-            // Right face
-            1.0f, 1.0f, 1.0f,
-            1.0f, -1.0f, 1.0f,
-            1.0f, 1.0f, -1.0f,
-            1.0f, -1.0f, 1.0f,
-            1.0f, -1.0f, -1.0f,
-            1.0f, 1.0f, -1.0f,
-
-            // Back face
-            1.0f, 1.0f, -1.0f,
-            1.0f, -1.0f, -1.0f,
-            -1.0f, 1.0f, -1.0f,
-            1.0f, -1.0f, -1.0f,
-            -1.0f, -1.0f, -1.0f,
-            -1.0f, 1.0f, -1.0f,
-
-            // Left face
-            -1.0f, 1.0f, -1.0f,
-            -1.0f, -1.0f, -1.0f,
-            -1.0f, 1.0f, 1.0f,
-            -1.0f, -1.0f, -1.0f,
-            -1.0f, -1.0f, 1.0f,
-            -1.0f, 1.0f, 1.0f,
-
-            // Top face
-            -1.0f, 1.0f, -1.0f,
-            -1.0f, 1.0f, 1.0f,
-            1.0f, 1.0f, -1.0f,
-            -1.0f, 1.0f, 1.0f,
-            1.0f, 1.0f, 1.0f,
-            1.0f, 1.0f, -1.0f,
-
-            // Bottom face
-            1.0f, -1.0f, -1.0f,
-            1.0f, -1.0f, 1.0f,
-            -1.0f, -1.0f, -1.0f,
-            1.0f, -1.0f, 1.0f,
-            -1.0f, -1.0f, 1.0f,
-            -1.0f, -1.0f, -1.0f,
-    };
-
-    public short[] getIndices() {
-        return indices;
-    }
-
-    short indices[] = new short[]{
-            0, 4, 1, 0, 9, 4, 9, 5, 4, 4, 5, 8, 4, 8, 1,
-            8, 10, 1, 8, 3, 10, 5, 3, 8, 5, 2, 3, 2, 7, 3,
-            7, 10, 3, 7, 6, 10, 7, 11, 6, 11, 0, 6, 0, 1, 6,
-            6, 1, 10, 9, 0, 11, 9, 11, 2, 9, 2, 5, 7, 2, 11};
-
-
-    public FloatBuffer getVertexBuffer() {
-        return vertexBuffer;
-    }
-
-    public FloatBuffer getColorBuffer() {
-        return colorBuffer;
-    }
-
-    public ShortBuffer getIndexBuffer() {
-        return indexBuffer;
-    }
-
-    private FloatBuffer vertexBuffer;
-
-    private FloatBuffer colorBuffer;
-
-    private ShortBuffer indexBuffer;
-
-    public FloatBuffer getNormalBuffer() {
-        return normalBuffer;
-    }
-
-    private FloatBuffer normalBuffer;
-
-    public FloatBuffer getTextureBuffer() {
-        return textureBuffer;
-    }
-
-    private FloatBuffer textureBuffer;
-
-    public Star() {
-        ByteBuffer vbb = ByteBuffer.allocateDirect(vertices.length * BYTES_PER_FLOAT);
+        ByteBuffer vbb = ByteBuffer.allocateDirect(aVertices.length * BYTES_PER_FLOAT);
         vbb.order(ByteOrder.nativeOrder());
         vertexBuffer = vbb.asFloatBuffer();
-        vertexBuffer.put(vertices);
+        vertexBuffer.put(aVertices);
         vertexBuffer.position(0);
 
-        ByteBuffer cbb = ByteBuffer.allocateDirect(colors.length * BYTES_PER_FLOAT);
-        cbb.order(ByteOrder.nativeOrder());
-        colorBuffer = cbb.asFloatBuffer();
-        colorBuffer.put(colors);
-        colorBuffer.position(0);
-
-        ByteBuffer ibb = ByteBuffer.allocateDirect(indices.length * BYTES_PER_SHORT);
-        ibb.order(ByteOrder.nativeOrder());
-        indexBuffer = ibb.asShortBuffer();
-        indexBuffer.put(indices);
-        indexBuffer.position(0);
-
-        ByteBuffer nbb = ByteBuffer.allocateDirect(normals.length * BYTES_PER_FLOAT);
+        ByteBuffer nbb = ByteBuffer.allocateDirect(aNormals.length * BYTES_PER_FLOAT);
         nbb.order(ByteOrder.nativeOrder());
         normalBuffer = nbb.asFloatBuffer();
-        normalBuffer.put(normals);
+        normalBuffer.put(aNormals);
         normalBuffer.position(0);
 
-        ByteBuffer tbb = ByteBuffer.allocateDirect(texCoords.length * BYTES_PER_FLOAT);
+        ByteBuffer tbb = ByteBuffer.allocateDirect(aTexCoords.length * BYTES_PER_FLOAT);
         tbb.order(ByteOrder.nativeOrder());
         textureBuffer = tbb.asFloatBuffer();
-        textureBuffer.put(texCoords);
+        textureBuffer.put(aTexCoords);
         textureBuffer.position(0);
+
+        genBuffers();
+    }
+
+    private void genBuffers() {
+        final int buffers[] = new int[3];
+        GLES20.glGenBuffers(3, buffers, 0);
+
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, buffers[0]);
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertexBuffer.capacity() * BYTES_PER_FLOAT, vertexBuffer, GLES20.GL_STATIC_DRAW);
+
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, buffers[1]);
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, normalBuffer.capacity() * BYTES_PER_FLOAT, normalBuffer, GLES20.GL_STATIC_DRAW);
+
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, buffers[2]);
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, textureBuffer.capacity() * BYTES_PER_FLOAT, textureBuffer,
+                GLES20.GL_STATIC_DRAW);
+
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+
+        mCubePositionsBufferIdx = buffers[0];
+        mCubeNormalsBufferIdx = buffers[1];
+        mCubeTexCoordsBufferIdx = buffers[2];
+
+        vertexBuffer.limit(0);
+        vertexBuffer = null;
+        normalBuffer.limit(0);
+        normalBuffer = null;
+        textureBuffer.limit(0);
+        textureBuffer = null;
+    }
+
+    public void draw(int position, int normal, int texture) {
+        // Pass in the position information
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mCubePositionsBufferIdx);
+        GLES20.glEnableVertexAttribArray(position);
+        GLES20.glVertexAttribPointer(position, POSITION_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false, 0, 0);
+
+        // Pass in the normal information
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mCubeNormalsBufferIdx);
+        GLES20.glEnableVertexAttribArray(normal);
+        GLES20.glVertexAttribPointer(normal, NORMAL_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false, 0, 0);
+
+        // Pass in the texture information
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mCubeTexCoordsBufferIdx);
+        GLES20.glEnableVertexAttribArray(texture);
+        GLES20.glVertexAttribPointer(texture, TEXCOORD_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false,
+                0, 0);
+
+        // Clear the currently bound buffer (so future OpenGL calls do not use this buffer).
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+
+        // Draw the cubes.
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, aIndices.length / 3);
     }
 }
