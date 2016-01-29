@@ -7,12 +7,9 @@
  
     varying vec4 v_Color;
     varying vec3 v_Normal;
-    varying vec3 v_Position;
- 
+
     void main()
     {
-        // Transform the vertex into eye space.
-        v_Position = vec3(u_MVMatrix * a_Position);
         // Pass through the color.
         v_Color = a_Color;
         // Transform the normal's orientation into eye space.
