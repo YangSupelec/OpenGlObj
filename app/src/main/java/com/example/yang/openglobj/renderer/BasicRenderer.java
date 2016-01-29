@@ -26,7 +26,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     /**
      * Used for debug logs.
      */
-    private static final String TAG = "LessonEightRenderer";
+    private static final String TAG = "BasicRenderer";
 
     /**
      * References to other main objects.
@@ -154,20 +154,6 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        // Set the background clear color to gray. The first component is
-        // red, the second is green, the third is blue, and the last
-        // component is alpha, which we don't use in this lesson.
-        // Set the background clear color to gray.
-        GLES20.glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
-
-        // Use culling to remove back faces.
-        GLES20.glEnable(GLES20.GL_CULL_FACE);
-
-        // Enable depth testing
-        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-
-        heightMap = new HeightMap();
-
         // Set the background clear color to black.
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
