@@ -241,29 +241,9 @@ public class Cube extends BaseObject3D {
     }
 
     public void draw(int position, int color, int normal, int texture) {
-        // Pass in the position information
-        GLES20.glVertexAttribPointer(position, POSITION_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false,
-                0, vertexBuffer);
 
-        GLES20.glEnableVertexAttribArray(position);
-
-        // Pass in the color information
-        GLES20.glVertexAttribPointer(color, COLOR_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false,
-                0, colorBuffer);
-
-        GLES20.glEnableVertexAttribArray(color);
-
-        // Pass in the normal information
-        GLES20.glVertexAttribPointer(normal, NORMAL_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false,
-                0, normalBuffer);
-
-        GLES20.glEnableVertexAttribArray(normal);
-
-        // Pass in the texture coordinate information
-        GLES20.glVertexAttribPointer(texture, TEXCOORD_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false,
-                0, textureBuffer);
-
-        GLES20.glEnableVertexAttribArray(texture);
+        // Call parent method to attribute info
+        assignAttribute(position, color, normal, texture);
 
         // Draw the cube.
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
