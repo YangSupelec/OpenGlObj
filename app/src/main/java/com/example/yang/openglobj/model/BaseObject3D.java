@@ -26,9 +26,11 @@ public class BaseObject3D {
     protected float[] aVertices;
     protected float[] aTexCoords;
     protected float[] aNormals;
+    protected float[] aColors;
     protected int[] aIndices;
 
     protected FloatBuffer vertexBuffer;
     protected FloatBuffer normalBuffer;
     protected FloatBuffer textureBuffer;
+    protected FloatBuffer colorBuffer;
 }

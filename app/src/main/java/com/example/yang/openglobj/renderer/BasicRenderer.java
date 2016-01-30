@@ -5,7 +5,7 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 
 import com.example.yang.openglobj.R;
-import com.example.yang.openglobj.model.Star;
+import com.example.yang.openglobj.model.Cube;
 import com.example.yang.openglobj.phone.MainActivity;
 import com.example.yang.openglobj.util.ErrorHandler;
 import com.example.yang.openglobj.util.ShaderHelper;
@@ -51,6 +51,11 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     private final float[] projectionMatrix = new float[16];
 
     /**
+     * Stores a copy of the model matrix specifically for the light position.
+     */
+    private float[] mLightModelMatrix = new float[16];
+
+    /**
      * Allocate storage for the final combined matrix. This will be passed into
      * the shader program.
      */
@@ -70,6 +75,9 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     private int mvpMatrixUniform;
     private int mvMatrixUniform;
 
+    /** This will be used to pass in the light position. */
+    private int mLightPosHandle;
+
     /**
      * OpenGL handles to our program attributes.
      */
@@ -86,11 +94,23 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
      */
     private int mTextureCoordinateHandle;
 
+    /** Used to hold a light centered on the origin in model space. We need a 4th coordinate so we can get translations to work when
+     *  we multiply this by our transformation matrices. */
+    private final float[] mLightPosInModelSpace = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
+
+    /** Used to hold the current position of the light in world space (after transformation via model matrix). */
+    private final float[] mLightPosInWorldSpace = new float[4];
+
+    /** Used to hold the transformed position of the light in eye space (after transformation via modelview matrix) */
+    private final float[] mLightPosInEyeSpace = new float[4];
 
     /**
-     * These are handles to our texture data.
+     * This is a handle to our cube shading program.
      */
-    private int mAndroidDataHandle;
+    private int program;
+
+    /** This is a handle to our texture data. */
+    private int mTextureDataHandle;
 
     /**
      * Identifiers for our uniforms and attributes inside the shaders.
@@ -98,15 +118,12 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     private static final String MVP_MATRIX_UNIFORM = "u_MVPMatrix";
     private static final String MV_MATRIX_UNIFORM = "u_MVMatrix";
     private static final String TEX_COORD_UNIFORM = "u_Texture";
+    private static final String LIGHT_UNIFORM = "u_LightPos";
 
     private static final String POSITION_ATTRIBUTE = "a_Position";
+    private static final String COLOR_ATTRIBUTE = "a_Color";
     private static final String NORMAL_ATTRIBUTE = "a_Normal";
     private static final String TEX_COORD_ATTRIBUTE = "a_TexCoordinate";
-
-    /**
-     * This is a handle to our cube shading program.
-     */
-    private int program;
 
     /**
      * Retain the most recent delta for touch events.
@@ -117,9 +134,9 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     public volatile float deltaY;
 
     /**
-     * The current star object.
+     * The current draw object.
      */
-    private Star star;
+    private Cube cube;
 
     /**
      * Initialize the model data.
@@ -127,13 +144,16 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     public BasicRenderer(final MainActivity mainActivity, ErrorHandler errorHandler) {
         this.mainActivity = mainActivity;
         this.errorHandler = errorHandler;
+        cube = new Cube();
     }
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        star = new Star(mainActivity.getResources());
         // Set the background clear color to black.
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        GLES20.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+
+        // Use culling to remove back faces.
+        GLES20.glEnable(GLES20.GL_CULL_FACE);
 
         // Enable depth testing
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
@@ -163,20 +183,13 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
 
         program = ShaderHelper.linkProgram(
                 ShaderHelper.compileVertexShader(
-                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.simple_vertex_shader)),
+                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.light_texture_vertex_shader)),
                 ShaderHelper.compileFragmentShader(
-                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.simple_fragment_shader))
+                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.light_texture_fragment_shader))
         );
 
         // Load the texture
-        mAndroidDataHandle = TextureHelper.loadTexture(mainActivity, R.drawable.generic_avatar);
-        GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
-
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mAndroidDataHandle);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mAndroidDataHandle);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR);
+        mTextureDataHandle = TextureHelper.loadTexture(mainActivity, R.drawable.bumpy_bricks_public_domain);
 
         // Initialize the accumulated rotation matrix
         Matrix.setIdentityM(accumulatedRotation, 0);
@@ -204,7 +217,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         final float bottom = -1.0f;
         final float top = 1.0f;
         final float near = 1.0f;
-        final float far = 1000.0f;
+        final float far = 10.0f;
 
         Matrix.frustumM(projectionMatrix, 0, left, right, bottom, top, near, far);
     }
@@ -223,15 +236,35 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         // Set program handles for cube drawing.
         mvpMatrixUniform = GLES20.glGetUniformLocation(program, MVP_MATRIX_UNIFORM);
         mvMatrixUniform = GLES20.glGetUniformLocation(program, MV_MATRIX_UNIFORM);
+        mLightPosHandle = GLES20.glGetUniformLocation(program, LIGHT_UNIFORM);
         positionAttribute = GLES20.glGetAttribLocation(program, POSITION_ATTRIBUTE);
         normalAttribute = GLES20.glGetAttribLocation(program, NORMAL_ATTRIBUTE);
+        colorAttribute = GLES20.glGetAttribLocation(program, COLOR_ATTRIBUTE);
         mTextureUniformHandle = GLES20.glGetUniformLocation(program, TEX_COORD_UNIFORM);
         mTextureCoordinateHandle = GLES20.glGetAttribLocation(program, TEX_COORD_ATTRIBUTE);
+
+        // Set the active texture unit to texture unit 0.
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+
+        // Bind the texture to this unit.
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureDataHandle);
+
+        // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
+        GLES20.glUniform1i(mTextureUniformHandle, 0);
+
+        // Calculate position of the light. Rotate and then push into the distance.
+        Matrix.setIdentityM(mLightModelMatrix, 0);
+        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -5.0f);
+        Matrix.rotateM(mLightModelMatrix, 0, 0, 0.0f, 1.0f, 0.0f);
+        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);
+
+        Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
+        Matrix.multiplyMV(mLightPosInEyeSpace, 0, viewMatrix, 0, mLightPosInWorldSpace, 0);
 
         // Draw the heightmap.
         // Translate the heightmap into the screen.
         Matrix.setIdentityM(modelMatrix, 0);
-        Matrix.translateM(modelMatrix, 0, 0.0f, 0.0f, -12f);
+        Matrix.translateM(modelMatrix, 0, 0.0f, 0.0f, -5.0f);
 
         // Set a matrix that contains the current rotation.
         Matrix.setIdentityM(currentRotation, 0);
@@ -266,7 +299,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         // Pass in the combined matrix.
         GLES20.glUniformMatrix4fv(mvpMatrixUniform, 1, false, mvpMatrix, 0);
 
-        // Render the heightmap.
-        star.draw(positionAttribute, normalAttribute, mTextureCoordinateHandle);
+        // Render the cube.
+        cube.draw(positionAttribute, colorAttribute, normalAttribute, mTextureCoordinateHandle);
     }
 }
