@@ -143,6 +143,8 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     public volatile float deltaX;
     public volatile float deltaY;
 
+    protected boolean isInitialize = true;
+
     /**
      * The current draw object.
      */
@@ -341,12 +343,16 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         // Draw the avatar.
         // Translate the avatar into the screen.
         Matrix.setIdentityM(modelMatrix, 0);
-        Matrix.translateM(modelMatrix, 0, 0.0f, 0.0f, -3.5f);
+        Matrix.translateM(modelMatrix, 0, 0.0f, 0.0f, -2.0f);
 
         // Set a matrix that contains the current rotation.
         Matrix.setIdentityM(currentRotation, 0);
         Matrix.rotateM(currentRotation, 0, deltaX, 0.0f, 1.0f, 0.0f);
-        Matrix.rotateM(currentRotation, 0, deltaY, 1.0f, 0.0f, 0.0f);
+        if (isInitialize) {
+            Matrix.rotateM(currentRotation, 0, -90, 1.0f, 0.0f, 0.0f);
+            Matrix.rotateM(currentRotation, 0, 45, 0.0f, 0.0f, 1.0f);
+            isInitialize = false;
+        }
         deltaX = 0.0f;
         deltaY = 0.0f;
 
