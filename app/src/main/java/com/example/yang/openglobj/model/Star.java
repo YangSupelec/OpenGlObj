@@ -2,6 +2,7 @@ package com.example.yang.openglobj.model;
 
 import android.content.res.Resources;
 import android.opengl.GLES20;
+import android.util.Log;
 
 import com.example.yang.openglobj.R;
 import com.example.yang.openglobj.parser.ObjParser;
@@ -14,11 +15,15 @@ import java.nio.ByteOrder;
  */
 public class Star extends BaseObject3D {
 
+    private static final String TAG = "Star";
+
     int mCubePositionsBufferIdx;
     int mCubeNormalsBufferIdx;
     int mCubeTexCoordsBufferIdx;
 
     public Star(Resources resources) {
+        Log.d(TAG, "starting parsing obj");
+
         ObjParser objParser = new ObjParser(resources, R.raw.generic_avatar_obj);
         objParser.parse();
         aVertices = objParser.getVertices();
@@ -26,6 +31,10 @@ public class Star extends BaseObject3D {
         aNormals = objParser.getNormals();
         aIndices = objParser.getIndices();
 
+        Log.d(TAG, "parsing obj finished");
+    }
+
+    public void genBuffers() {
         ByteBuffer vbb = ByteBuffer.allocateDirect(aVertices.length * BYTES_PER_FLOAT);
         vbb.order(ByteOrder.nativeOrder());
         vertexBuffer = vbb.asFloatBuffer();
@@ -44,10 +53,6 @@ public class Star extends BaseObject3D {
         textureBuffer.put(aTexCoords);
         textureBuffer.position(0);
 
-        genBuffers();
-    }
-
-    private void genBuffers() {
         final int buffers[] = new int[3];
         GLES20.glGenBuffers(3, buffers, 0);
 
@@ -96,6 +101,13 @@ public class Star extends BaseObject3D {
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
         // Draw the cubes.
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, aIndices.length / 3);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, aIndices.length);
+    }
+
+    public void release() {
+        // Delete buffers from OpenGL's memory
+        final int[] buffersToDelete = new int[] { mCubePositionsBufferIdx, mCubeNormalsBufferIdx,
+                mCubeTexCoordsBufferIdx };
+        GLES20.glDeleteBuffers(buffersToDelete.length, buffersToDelete, 0);
     }
 }

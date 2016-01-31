@@ -25,6 +25,22 @@ public class BaseObject3D {
     protected static final int COLOR_DATA_SIZE_IN_ELEMENTS = 4;
     protected static final int TEXCOORD_DATA_SIZE_IN_ELEMENTS = 2;
 
+    public float[] getVertices() {
+        return aVertices;
+    }
+
+    public float[] getTexCoords() {
+        return aTexCoords;
+    }
+
+    public float[] getNormals() {
+        return aNormals;
+    }
+
+    public int[] getIndices() {
+        return aIndices;
+    }
+
     protected float[] aVertices;
     protected float[] aTexCoords;
     protected float[] aNormals;

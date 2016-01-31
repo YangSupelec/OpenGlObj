@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.example.yang.openglobj.R;
 import com.example.yang.openglobj.renderer.BasicRenderer;
 import com.example.yang.openglobj.scene.BaseSurfaceView;
 
@@ -23,12 +24,15 @@ public class MainActivity extends AppCompatActivity {
      * Hold a reference to our GLSurfaceView
      */
     private BaseSurfaceView glSurfaceView;
+    private BasicRenderer renderer;
     private boolean rendererSet = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        glSurfaceView = new BaseSurfaceView(this);
+        setContentView(R.layout.activity_main);
+
+        glSurfaceView = (BaseSurfaceView) findViewById(R.id.gl_surface_view);
 
         // Check if the system supports OpenGL ES 2.0.
         final ActivityManager activityManager =
@@ -47,10 +51,24 @@ public class MainActivity extends AppCompatActivity {
             getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
             // Set the renderer to our demo renderer, defined below.
-            glSurfaceView.setRenderer(new BasicRenderer(this, glSurfaceView), displayMetrics.density);
+            renderer = new BasicRenderer(this, glSurfaceView);
+            glSurfaceView.setRenderer(renderer, displayMetrics.density);
             rendererSet = true;
         }
-        setContentView(glSurfaceView);
+
+        findViewById(R.id.button_decrease_num_cubes).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                decreaseCubeCount();
+            }
+        });
+
+        findViewById(R.id.button_increase_num_cubes).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                increaseCubeCount();
+            }
+        });
     }
 
     @Override
@@ -69,5 +87,23 @@ public class MainActivity extends AppCompatActivity {
         if (rendererSet) {
             glSurfaceView.onResume();
         }
+    }
+
+    private void decreaseCubeCount() {
+        glSurfaceView.queueEvent(new Runnable() {
+            @Override
+            public void run() {
+                renderer.decreaseCubeCount();
+            }
+        });
+    }
+
+    private void increaseCubeCount() {
+        glSurfaceView.queueEvent(new Runnable() {
+            @Override
+            public void run() {
+                renderer.increaseCubeCount();
+            }
+        });
     }
 }

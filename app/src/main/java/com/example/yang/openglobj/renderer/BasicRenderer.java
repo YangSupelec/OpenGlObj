@@ -3,14 +3,20 @@ package com.example.yang.openglobj.renderer;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.example.yang.openglobj.R;
 import com.example.yang.openglobj.model.Cube;
+import com.example.yang.openglobj.model.Star;
 import com.example.yang.openglobj.phone.MainActivity;
 import com.example.yang.openglobj.util.ErrorHandler;
 import com.example.yang.openglobj.util.ShaderHelper;
 import com.example.yang.openglobj.util.TextResourceReader;
 import com.example.yang.openglobj.util.TextureHelper;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -28,7 +34,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
      * References to other main objects.
      */
     private final MainActivity mainActivity;
-    private final ErrorHandler errorHandler;
+    private final GLSurfaceView mGlSurfaceView;
 
     /**
      * Store the model matrix. This matrix is used to move models from object
@@ -104,6 +110,10 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     /** Used to hold the transformed position of the light in eye space (after transformation via modelview matrix) */
     private final float[] mLightPosInEyeSpace = new float[4];
 
+    /** Additional info for cube generation. */
+    private int mLastRequestedCubeFactor;
+    private int mActualCubeFactor;
+
     /**
      * This is a handle to our cube shading program.
      */
@@ -136,19 +146,89 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     /**
      * The current draw object.
      */
-    private Cube cube;
+    private Star star;
+
+    /** Thread executor for generating cube data in the background. */
+    private final ExecutorService mSingleThreadedExecutor = Executors.newSingleThreadExecutor();
 
     /**
      * Initialize the model data.
      */
-    public BasicRenderer(final MainActivity mainActivity, ErrorHandler errorHandler) {
+    public BasicRenderer(final MainActivity mainActivity, final GLSurfaceView glSurfaceView) {
         this.mainActivity = mainActivity;
-        this.errorHandler = errorHandler;
-        cube = new Cube();
+        this.mGlSurfaceView = glSurfaceView;
+    }
+
+    private void generateAvatarData() {
+        mSingleThreadedExecutor.submit(new GenDataRunnable());
+    }
+
+    class GenDataRunnable implements Runnable {
+
+        GenDataRunnable() {
+            Log.d(TAG, "the thread for generating avatar data is created");
+        }
+
+        @Override
+        public void run() {
+            try {
+                star = new Star(mainActivity.getResources());
+                // Run on the GL thread -- the same thread the other members of the renderer run in.
+                mGlSurfaceView.queueEvent(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Not supposed to manually call this, but Dalvik sometimes needs some additional prodding to clean up the heap.
+                        System.gc();
+
+                        try {
+                            star.genBuffers();
+                        } catch (OutOfMemoryError err) {
+                            if (star != null) {
+                                star.release();
+                                star = null;
+                            }
+
+                            // Not supposed to manually call this, but Dalvik sometimes needs some additional prodding to clean up the heap.
+                            System.gc();
+
+                            mainActivity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+    								Toast.makeText(mainActivity, "Out of memory; Dalvik takes a while to clean up the memory. Please try again.\nExternal bytes allocated=", Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+                    }
+                });
+            } catch (OutOfMemoryError e) {
+                if (null != star) {
+                    star.release();
+                    star = null;
+                }
+                // Not supposed to manually call this, but Dalvik sometimes needs some additional prodding to clean up the heap.
+                System.gc();
+
+                mainActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+						Toast.makeText(mainActivity, "Out of memory; Dalvik takes a while to clean up the memory. Please try again.\nExternal bytes allocated=", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        }
+    }
+
+    public void decreaseCubeCount() {
+    }
+
+    public void increaseCubeCount() {
     }
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+
+        generateAvatarData();
+
         // Set the background clear color to black.
         GLES20.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
@@ -183,13 +263,13 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
 
         program = ShaderHelper.linkProgram(
                 ShaderHelper.compileVertexShader(
-                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.light_texture_vertex_shader)),
+                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.avatar_vertex_shader)),
                 ShaderHelper.compileFragmentShader(
-                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.light_texture_fragment_shader))
+                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.avatar_fragment_shader))
         );
 
         // Load the texture
-        mTextureDataHandle = TextureHelper.loadTexture(mainActivity, R.drawable.bumpy_bricks_public_domain);
+        mTextureDataHandle = TextureHelper.loadTexture(mainActivity, R.drawable.generic_avatar);
 
         // Initialize the accumulated rotation matrix
         Matrix.setIdentityM(accumulatedRotation, 0);
@@ -239,7 +319,6 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         mLightPosHandle = GLES20.glGetUniformLocation(program, LIGHT_UNIFORM);
         positionAttribute = GLES20.glGetAttribLocation(program, POSITION_ATTRIBUTE);
         normalAttribute = GLES20.glGetAttribLocation(program, NORMAL_ATTRIBUTE);
-        colorAttribute = GLES20.glGetAttribLocation(program, COLOR_ATTRIBUTE);
         mTextureUniformHandle = GLES20.glGetUniformLocation(program, TEX_COORD_UNIFORM);
         mTextureCoordinateHandle = GLES20.glGetAttribLocation(program, TEX_COORD_ATTRIBUTE);
 
@@ -254,17 +333,15 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
 
         // Calculate position of the light. Rotate and then push into the distance.
         Matrix.setIdentityM(mLightModelMatrix, 0);
-        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -5.0f);
-        Matrix.rotateM(mLightModelMatrix, 0, 0, 0.0f, 1.0f, 0.0f);
-        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);
+        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -1.0f);
 
         Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
         Matrix.multiplyMV(mLightPosInEyeSpace, 0, viewMatrix, 0, mLightPosInWorldSpace, 0);
 
-        // Draw the heightmap.
-        // Translate the heightmap into the screen.
+        // Draw the avatar.
+        // Translate the avatar into the screen.
         Matrix.setIdentityM(modelMatrix, 0);
-        Matrix.translateM(modelMatrix, 0, 0.0f, 0.0f, -5.0f);
+        Matrix.translateM(modelMatrix, 0, 0.0f, 0.0f, -3.5f);
 
         // Set a matrix that contains the current rotation.
         Matrix.setIdentityM(currentRotation, 0);
@@ -299,7 +376,8 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         // Pass in the combined matrix.
         GLES20.glUniformMatrix4fv(mvpMatrixUniform, 1, false, mvpMatrix, 0);
 
-        // Render the cube.
-        cube.draw(positionAttribute, colorAttribute, normalAttribute, mTextureCoordinateHandle);
+        if (null != star) {
+            star.draw(positionAttribute, normalAttribute, mTextureCoordinateHandle);
+        }
     }
 }
