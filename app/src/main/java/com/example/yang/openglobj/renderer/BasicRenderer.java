@@ -55,11 +55,6 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     private final float[] projectionMatrix = new float[16];
 
     /**
-     * Stores a copy of the model matrix specifically for the light position.
-     */
-    private float[] mLightModelMatrix = new float[16];
-
-    /**
      * Allocate storage for the final combined matrix. This will be passed into
      * the shader program.
      */
@@ -80,11 +75,6 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     private int mvMatrixUniform;
 
     /**
-     * This will be used to pass in the light position.
-     */
-    private int mLightPosHandle;
-
-    /**
      * OpenGL handles to our program attributes.
      */
     private int positionAttribute;
@@ -99,28 +89,6 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
      * This will be used to pass in model texture coordinate information.
      */
     private int mTextureCoordinateHandle;
-
-    /**
-     * Used to hold a light centered on the origin in model space. We need a 4th coordinate so we can get translations to work when
-     * we multiply this by our transformation matrices.
-     */
-    private final float[] mLightPosInModelSpace = new float[]{0.0f, 0.0f, 0.0f, 1.0f};
-
-    /**
-     * Used to hold the current position of the light in world space (after transformation via model matrix).
-     */
-    private final float[] mLightPosInWorldSpace = new float[4];
-
-    /**
-     * Used to hold the transformed position of the light in eye space (after transformation via modelview matrix)
-     */
-    private final float[] mLightPosInEyeSpace = new float[4];
-
-    /**
-     * Additional info for cube generation.
-     */
-    private int mLastRequestedCubeFactor;
-    private int mActualCubeFactor;
 
     /**
      * This is a handle to our cube shading program.
@@ -330,7 +298,6 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         // Set program handles for cube drawing.
         mvpMatrixUniform = GLES20.glGetUniformLocation(program, MVP_MATRIX_UNIFORM);
         mvMatrixUniform = GLES20.glGetUniformLocation(program, MV_MATRIX_UNIFORM);
-        mLightPosHandle = GLES20.glGetUniformLocation(program, LIGHT_UNIFORM);
         positionAttribute = GLES20.glGetAttribLocation(program, POSITION_ATTRIBUTE);
         normalAttribute = GLES20.glGetAttribLocation(program, NORMAL_ATTRIBUTE);
         mTextureUniformHandle = GLES20.glGetUniformLocation(program, TEX_COORD_UNIFORM);
@@ -344,13 +311,6 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
 
         // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
         GLES20.glUniform1i(mTextureUniformHandle, 0);
-
-        // Calculate position of the light. Rotate and then push into the distance.
-        Matrix.setIdentityM(mLightModelMatrix, 0);
-        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -1.0f);
-
-        Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
-        Matrix.multiplyMV(mLightPosInEyeSpace, 0, viewMatrix, 0, mLightPosInWorldSpace, 0);
 
         // Draw the avatar.
         // Translate the avatar into the screen.
