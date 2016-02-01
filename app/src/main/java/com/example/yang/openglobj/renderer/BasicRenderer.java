@@ -306,9 +306,6 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         initializeModelMatrix();
         handleMatrixTrans();
 
-        // Pass in the combined matrix.
-        GLES20.glUniformMatrix4fv(mvpMatrixUniform, 1, false, mvpMatrix, 0);
-
         if (null != avatar) {
             if (!hasBuffer) {
                 avatar.genBuffers();
@@ -341,6 +338,9 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         // (which now contains model * view * projection).
         Matrix.multiplyMM(temporaryMatrix, 0, projectionMatrix, 0, mvpMatrix, 0);
         System.arraycopy(temporaryMatrix, 0, mvpMatrix, 0, 16);
+
+        // Pass in the combined matrix.
+        GLES20.glUniformMatrix4fv(mvpMatrixUniform, 1, false, mvpMatrix, 0);
     }
 
     private void initializeModelMatrix() {
