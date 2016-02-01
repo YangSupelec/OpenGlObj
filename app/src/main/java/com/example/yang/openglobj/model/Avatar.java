@@ -9,7 +9,6 @@ import com.example.yang.openglobj.parser.ObjParser;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 
 /**
  * Created by yang on 28/01/16.
@@ -17,17 +16,6 @@ import java.nio.FloatBuffer;
 public class Avatar extends BaseObject3D {
 
     private static final String TAG = "Avatar";
-
-    protected float[] aVertices;
-    protected float[] aTexCoords;
-    protected float[] aNormals;
-    protected float[] aColors;
-    protected int[] aIndices;
-
-    protected FloatBuffer vertexBuffer;
-    protected FloatBuffer normalBuffer;
-    protected FloatBuffer textureBuffer;
-    protected FloatBuffer colorBuffer;
 
     public int getMvpMatrixUniform() {
         return mvpMatrixUniform;
@@ -167,7 +155,7 @@ public class Avatar extends BaseObject3D {
 
     public void release() {
         // Delete buffers from OpenGL's memory
-        final int[] buffersToDelete = new int[] {mAvatarPositionsBufferIdx, mAvatarNormalsBufferIdx,
+        final int[] buffersToDelete = new int[]{mAvatarPositionsBufferIdx, mAvatarNormalsBufferIdx,
                 mAvatarTexCoordsBufferIdx};
         GLES20.glDeleteBuffers(buffersToDelete.length, buffersToDelete, 0);
     }
