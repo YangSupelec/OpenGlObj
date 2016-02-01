@@ -157,33 +157,6 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         public void run() {
             try {
                 avatar = new Avatar(mainActivity.getResources());
-                /*// Run on the GL thread -- the same thread the other members of the renderer run in.
-                mGlSurfaceView.queueEvent(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Not supposed to manually call this, but Dalvik sometimes needs some additional prodding to clean up the heap.
-                        System.gc();
-
-                        try {
-                            avatar.genBuffers();
-                        } catch (OutOfMemoryError err) {
-                            if (avatar != null) {
-                                avatar.release();
-                                avatar = null;
-                            }
-
-                            // Not supposed to manually call this, but Dalvik sometimes needs some additional prodding to clean up the heap.
-                            System.gc();
-
-                            mainActivity.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(mainActivity, "Out of memory; Dalvik takes a while to clean up the memory. Please try again.\nExternal bytes allocated=", Toast.LENGTH_LONG).show();
-                                }
-                            });
-                        }
-                    }
-                });*/
             } catch (OutOfMemoryError e) {
                 if (null != avatar) {
                     avatar.release();
@@ -212,6 +185,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 
         hasBuffer = false;
+        isInitialize = true;
 
         initializeGLParams();
         initializeViewMatrix();
@@ -329,14 +303,25 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         // Set a matrix that contains the current rotation.
         Matrix.setIdentityM(currentRotation, 0);
         Matrix.rotateM(currentRotation, 0, deltaX, 0.0f, 1.0f, 0.0f);
-        if (isInitialize) {
-            Matrix.rotateM(currentRotation, 0, -90, 1.0f, 0.0f, 0.0f);
-            Matrix.rotateM(currentRotation, 0, 45, 0.0f, 0.0f, 1.0f);
-            isInitialize = false;
-        }
         deltaX = 0.0f;
         deltaY = 0.0f;
 
+        initializeModelMatrix();
+        handleMatrixTrans();
+
+        // Pass in the combined matrix.
+        GLES20.glUniformMatrix4fv(mvpMatrixUniform, 1, false, mvpMatrix, 0);
+
+        if (null != avatar) {
+            if (!hasBuffer) {
+                avatar.genBuffers();
+                hasBuffer = true;
+            }
+            avatar.draw(positionAttribute, normalAttribute, mTextureCoordinateHandle);
+        }
+    }
+
+    private void handleMatrixTrans() {
         // Multiply the current rotation by the accumulated rotation, and then
         // set the accumulated rotation to the result.
         Matrix.multiplyMM(temporaryMatrix, 0, currentRotation, 0, accumulatedRotation, 0);
@@ -359,16 +344,13 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         // (which now contains model * view * projection).
         Matrix.multiplyMM(temporaryMatrix, 0, projectionMatrix, 0, mvpMatrix, 0);
         System.arraycopy(temporaryMatrix, 0, mvpMatrix, 0, 16);
+    }
 
-        // Pass in the combined matrix.
-        GLES20.glUniformMatrix4fv(mvpMatrixUniform, 1, false, mvpMatrix, 0);
-
-        if (null != avatar) {
-            if (!hasBuffer) {
-                avatar.genBuffers();
-                hasBuffer = true;
-            }
-            avatar.draw(positionAttribute, normalAttribute, mTextureCoordinateHandle);
+    private void initializeModelMatrix() {
+        if (isInitialize) {
+            Matrix.rotateM(currentRotation, 0, -90, 1.0f, 0.0f, 0.0f);
+            Matrix.rotateM(currentRotation, 0, 45, 0.0f, 0.0f, 1.0f);
+            isInitialize = false;
         }
     }
 }
