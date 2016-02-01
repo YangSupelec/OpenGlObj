@@ -7,10 +7,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.yang.openglobj.R;
-import com.example.yang.openglobj.model.Cube;
 import com.example.yang.openglobj.model.Star;
 import com.example.yang.openglobj.phone.MainActivity;
-import com.example.yang.openglobj.util.ErrorHandler;
 import com.example.yang.openglobj.util.ShaderHelper;
 import com.example.yang.openglobj.util.TextResourceReader;
 import com.example.yang.openglobj.util.TextureHelper;
@@ -81,7 +79,9 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     private int mvpMatrixUniform;
     private int mvMatrixUniform;
 
-    /** This will be used to pass in the light position. */
+    /**
+     * This will be used to pass in the light position.
+     */
     private int mLightPosHandle;
 
     /**
@@ -100,17 +100,25 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
      */
     private int mTextureCoordinateHandle;
 
-    /** Used to hold a light centered on the origin in model space. We need a 4th coordinate so we can get translations to work when
-     *  we multiply this by our transformation matrices. */
-    private final float[] mLightPosInModelSpace = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
+    /**
+     * Used to hold a light centered on the origin in model space. We need a 4th coordinate so we can get translations to work when
+     * we multiply this by our transformation matrices.
+     */
+    private final float[] mLightPosInModelSpace = new float[]{0.0f, 0.0f, 0.0f, 1.0f};
 
-    /** Used to hold the current position of the light in world space (after transformation via model matrix). */
+    /**
+     * Used to hold the current position of the light in world space (after transformation via model matrix).
+     */
     private final float[] mLightPosInWorldSpace = new float[4];
 
-    /** Used to hold the transformed position of the light in eye space (after transformation via modelview matrix) */
+    /**
+     * Used to hold the transformed position of the light in eye space (after transformation via modelview matrix)
+     */
     private final float[] mLightPosInEyeSpace = new float[4];
 
-    /** Additional info for cube generation. */
+    /**
+     * Additional info for cube generation.
+     */
     private int mLastRequestedCubeFactor;
     private int mActualCubeFactor;
 
@@ -119,7 +127,9 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
      */
     private int program;
 
-    /** This is a handle to our texture data. */
+    /**
+     * This is a handle to our texture data.
+     */
     private int mTextureDataHandle;
 
     /**
@@ -150,7 +160,9 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
      */
     private Star star;
 
-    /** Thread executor for generating cube data in the background. */
+    /**
+     * Thread executor for generating cube data in the background.
+     */
     private final ExecutorService mSingleThreadedExecutor = Executors.newSingleThreadExecutor();
 
     /**
@@ -196,7 +208,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
                             mainActivity.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-    								Toast.makeText(mainActivity, "Out of memory; Dalvik takes a while to clean up the memory. Please try again.\nExternal bytes allocated=", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(mainActivity, "Out of memory; Dalvik takes a while to clean up the memory. Please try again.\nExternal bytes allocated=", Toast.LENGTH_LONG).show();
                                 }
                             });
                         }
@@ -213,7 +225,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
                 mainActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-						Toast.makeText(mainActivity, "Out of memory; Dalvik takes a while to clean up the memory. Please try again.\nExternal bytes allocated=", Toast.LENGTH_LONG).show();
+                        Toast.makeText(mainActivity, "Out of memory; Dalvik takes a while to clean up the memory. Please try again.\nExternal bytes allocated=", Toast.LENGTH_LONG).show();
                     }
                 });
             }
