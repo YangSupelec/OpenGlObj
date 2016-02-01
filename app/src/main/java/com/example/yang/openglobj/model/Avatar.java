@@ -9,6 +9,7 @@ import com.example.yang.openglobj.parser.ObjParser;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 
 /**
  * Created by yang on 28/01/16.
@@ -16,6 +17,17 @@ import java.nio.ByteOrder;
 public class Avatar extends BaseObject3D {
 
     private static final String TAG = "Avatar";
+
+    protected float[] aVertices;
+    protected float[] aTexCoords;
+    protected float[] aNormals;
+    protected float[] aColors;
+    protected int[] aIndices;
+
+    protected FloatBuffer vertexBuffer;
+    protected FloatBuffer normalBuffer;
+    protected FloatBuffer textureBuffer;
+    protected FloatBuffer colorBuffer;
 
     public int getMvpMatrixUniform() {
         return mvpMatrixUniform;

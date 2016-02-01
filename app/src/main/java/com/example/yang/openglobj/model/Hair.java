@@ -9,12 +9,51 @@ import com.example.yang.openglobj.parser.ObjParser;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 
 /**
  * Created by yang on 28/01/16.
  */
 public class Hair extends BaseObject3D {
     private static final String TAG = "Hair";
+
+    protected float[] aVertices;
+    protected float[] aTexCoords;
+    protected float[] aNormals;
+    protected float[] aColors;
+    protected int[] aIndices;
+
+    protected FloatBuffer vertexBuffer;
+    protected FloatBuffer normalBuffer;
+    protected FloatBuffer textureBuffer;
+    protected FloatBuffer colorBuffer;
+
+    public int getMvpMatrixUniform() {
+        return mvpMatrixUniform;
+    }
+
+    public int getMvMatrixUniform() {
+        return mvMatrixUniform;
+    }
+
+    /**
+     * OpenGL handles to our program uniforms.
+     */
+    private int mvpMatrixUniform;
+    private int mvMatrixUniform;
+
+    /**
+     * OpenGL handles to our program attributes.
+     */
+    private int positionAttribute;
+    private int normalAttribute;
+    private int colorAttribute;
+
+    /**
+     * This will be used to pass in the texture.
+     */
+    private int mTextureUniformHandle;
+    private int mTextureCoordinateHandle;
 
     int mHairPositionsBufferIdx;
     int mHairNormalsBufferIdx;
@@ -31,6 +70,28 @@ public class Hair extends BaseObject3D {
         aIndices = objParser.getIndices();
 
         Log.d(TAG, "parsing obj finished");
+    }
+
+    public void genHandle(int program, int textureHandle) {
+        // Set our per-vertex lighting program.
+        GLES20.glUseProgram(program);
+
+        // Set program handles for cube drawing.
+        mvpMatrixUniform = GLES20.glGetUniformLocation(program, MVP_MATRIX_UNIFORM);
+        mvMatrixUniform = GLES20.glGetUniformLocation(program, MV_MATRIX_UNIFORM);
+        positionAttribute = GLES20.glGetAttribLocation(program, POSITION_ATTRIBUTE);
+        normalAttribute = GLES20.glGetAttribLocation(program, NORMAL_ATTRIBUTE);
+        mTextureUniformHandle = GLES20.glGetUniformLocation(program, TEX_COORD_UNIFORM);
+        mTextureCoordinateHandle = GLES20.glGetAttribLocation(program, TEX_COORD_ATTRIBUTE);
+
+        // Set the active texture unit to texture unit 0.
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+
+        // Bind the texture to this unit.
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle);
+
+        // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
+        GLES20.glUniform1i(mTextureUniformHandle, 0);
     }
 
     public void genBuffers() {
@@ -79,21 +140,21 @@ public class Hair extends BaseObject3D {
         textureBuffer = null;
     }
 
-    public void draw(int position, int normal, int texture) {
+    public void draw() {
         // Pass in the position information
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mHairPositionsBufferIdx);
-        GLES20.glEnableVertexAttribArray(position);
-        GLES20.glVertexAttribPointer(position, POSITION_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false, 0, 0);
+        GLES20.glEnableVertexAttribArray(positionAttribute);
+        GLES20.glVertexAttribPointer(positionAttribute, POSITION_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false, 0, 0);
 
         // Pass in the normal information
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mHairNormalsBufferIdx);
-        GLES20.glEnableVertexAttribArray(normal);
-        GLES20.glVertexAttribPointer(normal, NORMAL_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false, 0, 0);
+        GLES20.glEnableVertexAttribArray(normalAttribute);
+        GLES20.glVertexAttribPointer(normalAttribute, NORMAL_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false, 0, 0);
 
         // Pass in the texture information
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mHairTexCoordsBufferIdx);
-        GLES20.glEnableVertexAttribArray(texture);
-        GLES20.glVertexAttribPointer(texture, TEXCOORD_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false,
+        GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
+        GLES20.glVertexAttribPointer(mTextureCoordinateHandle, TEXCOORD_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false,
                 0, 0);
 
         // Clear the currently bound buffer (so future OpenGL calls do not use this buffer).

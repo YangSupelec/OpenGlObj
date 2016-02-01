@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import com.example.yang.openglobj.R;
 import com.example.yang.openglobj.model.Avatar;
+import com.example.yang.openglobj.model.Hair;
 import com.example.yang.openglobj.phone.MainActivity;
 import com.example.yang.openglobj.util.ShaderHelper;
 import com.example.yang.openglobj.util.TextResourceReader;
@@ -35,7 +36,9 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     private final float[] temporaryMatrix = new float[16];
 
     private int program;
+    private int programHair;
     private int mTextureDataHandle;
+    private int mTextureDataHandleForHair;
 
     public volatile float deltaX;
     public volatile float deltaY;
@@ -44,15 +47,16 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     protected boolean hasBuffer = false;
 
     private Avatar avatar;
+    private Hair hair;
 
     private final ExecutorService mSingleThreadedExecutor = Executors.newSingleThreadExecutor();
 
     public BasicRenderer(final MainActivity mainActivity) {
         this.mainActivity = mainActivity;
-        generateAvatarData();
+        generateData();
     }
 
-    private void generateAvatarData() {
+    private void generateData() {
         mSingleThreadedExecutor.submit(new GenDataRunnable());
     }
 
@@ -66,10 +70,16 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         public void run() {
             try {
                 avatar = new Avatar(mainActivity.getResources());
+                hair = new Hair(mainActivity.getResources());
             } catch (OutOfMemoryError e) {
                 if (null != avatar) {
                     avatar.release();
                     avatar = null;
+                }
+
+                if (null != hair) {
+                    hair.release();
+                    hair = null;
                 }
                 // Not supposed to manually call this, but Dalvik sometimes needs some additional prodding to clean up the heap.
                 System.gc();
@@ -105,9 +115,16 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
                 ShaderHelper.compileFragmentShader(
                         TextResourceReader.readTextFileFromResource(mainActivity, R.raw.avatar_fragment_shader))
         );
+        programHair = ShaderHelper.linkProgram(
+                ShaderHelper.compileVertexShader(
+                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.hair_vertex_shader)),
+                ShaderHelper.compileFragmentShader(
+                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.hair_fragment_shader))
+        );
 
         // Load the texture
         mTextureDataHandle = TextureHelper.loadTexture(mainActivity, R.drawable.generic_avatar);
+        mTextureDataHandleForHair = TextureHelper.loadTexture(mainActivity, R.drawable.generic_hair);
 
         // Initialize the accumulated rotation matrix
         Matrix.setIdentityM(accumulatedRotation, 0);
@@ -185,12 +202,15 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         initializeModelMatrix();
         handleMatrixTrans();
 
-        if (null != avatar) {
+        if (null != avatar && hair != null) {
             if (!hasBuffer) {
                 avatar.genBuffers();
+                hair.genBuffers();
                 hasBuffer = true;
             }
+            hair.genHandle(programHair, mTextureDataHandleForHair);
             avatar.genHandle(program, mTextureDataHandle);
+            hair.draw();
             avatar.draw();
         }
     }
@@ -211,8 +231,10 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         Matrix.multiplyMM(mvpMatrix, 0, viewMatrix, 0, modelMatrix, 0);
 
         // Pass in the modelview matrix.
-        if (null != avatar)
+        if (null != avatar && null != hair) {
             GLES20.glUniformMatrix4fv(avatar.getMvMatrixUniform(), 1, false, mvpMatrix, 0);
+            GLES20.glUniformMatrix4fv(hair.getMvMatrixUniform(), 1, false, mvpMatrix, 0);
+        }
 
         // This multiplies the modelview matrix by the projection matrix,
         // and stores the result in the MVP matrix
@@ -221,8 +243,10 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         System.arraycopy(temporaryMatrix, 0, mvpMatrix, 0, 16);
 
         // Pass in the combined matrix.
-        if (null != avatar)
+        if (null != avatar && hair != null) {
             GLES20.glUniformMatrix4fv(avatar.getMvpMatrixUniform(), 1, false, mvpMatrix, 0);
+            GLES20.glUniformMatrix4fv(hair.getMvpMatrixUniform(), 1, false, mvpMatrix, 0);
+        }
     }
 
     private void initializeModelMatrix() {

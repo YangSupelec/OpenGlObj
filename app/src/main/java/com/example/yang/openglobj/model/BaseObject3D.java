@@ -26,15 +26,4 @@ public class BaseObject3D {
     private static final String COLOR_ATTRIBUTE = "a_Color";
     protected static final String NORMAL_ATTRIBUTE = "a_Normal";
     protected static final String TEX_COORD_ATTRIBUTE = "a_TexCoordinate";
-
-    protected float[] aVertices;
-    protected float[] aTexCoords;
-    protected float[] aNormals;
-    protected float[] aColors;
-    protected int[] aIndices;
-
-    protected FloatBuffer vertexBuffer;
-    protected FloatBuffer normalBuffer;
-    protected FloatBuffer textureBuffer;
-    protected FloatBuffer colorBuffer;
 }
