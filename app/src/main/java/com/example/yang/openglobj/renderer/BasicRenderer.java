@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import com.example.yang.openglobj.R;
 import com.example.yang.openglobj.model.Avatar;
+import com.example.yang.openglobj.model.Hair;
 import com.example.yang.openglobj.phone.MainActivity;
 import com.example.yang.openglobj.util.ShaderHelper;
 import com.example.yang.openglobj.util.TextResourceReader;
@@ -115,8 +116,6 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     /**
      * Retain the most recent delta for touch events.
      */
-    // These still work without volatile, but refreshes are not guaranteed to
-    // happen.
     public volatile float deltaX;
     public volatile float deltaY;
 
