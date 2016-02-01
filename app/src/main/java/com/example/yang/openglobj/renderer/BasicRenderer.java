@@ -122,6 +122,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     public volatile float deltaY;
 
     protected boolean isInitialize = true;
+    protected boolean hasBuffer = false;
 
     /**
      * The current draw object.
@@ -139,6 +140,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     public BasicRenderer(final MainActivity mainActivity, final GLSurfaceView glSurfaceView) {
         this.mainActivity = mainActivity;
         this.mGlSurfaceView = glSurfaceView;
+        generateAvatarData();
     }
 
     private void generateAvatarData() {
@@ -155,7 +157,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         public void run() {
             try {
                 avatar = new Avatar(mainActivity.getResources());
-                // Run on the GL thread -- the same thread the other members of the renderer run in.
+                /*// Run on the GL thread -- the same thread the other members of the renderer run in.
                 mGlSurfaceView.queueEvent(new Runnable() {
                     @Override
                     public void run() {
@@ -181,7 +183,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
                             });
                         }
                     }
-                });
+                });*/
             } catch (OutOfMemoryError e) {
                 if (null != avatar) {
                     avatar.release();
@@ -209,39 +211,10 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 
-        generateAvatarData();
+        hasBuffer = false;
 
-        // Set the background clear color to black.
-        GLES20.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-
-        // Use culling to remove back faces.
-        GLES20.glEnable(GLES20.GL_CULL_FACE);
-
-        // Enable depth testing
-        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-
-        // Position the eye in front of the origin.
-        final float eyeX = 0.0f;
-        final float eyeY = 0.5f;
-        final float eyeZ = 3.0f;
-
-        // We are looking toward the distance
-        final float lookX = 0.0f;
-        final float lookY = 0.0f;
-        final float lookZ = 0.0f;
-
-        // Set our up vector. This is where our head would be pointing were we
-        // holding the camera.
-        final float upX = 0.0f;
-        final float upY = 1.0f;
-        final float upZ = 0.0f;
-
-        // Set the view matrix. This matrix can be said to represent the camera
-        // position.
-        // NOTE: In OpenGL 1, a ModelView matrix is used, which is a combination
-        // of a model and view matrix. In OpenGL 2, we can keep track of these
-        // matrices separately if we choose.
-        Matrix.setLookAtM(viewMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
+        initializeGLParams();
+        initializeViewMatrix();
 
         program = ShaderHelper.linkProgram(
                 ShaderHelper.compileVertexShader(
@@ -270,10 +243,45 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         // Set the OpenGL viewport to the same size as the surface.
         GLES20.glViewport(0, 0, width, height);
+        initializeProjectionMatrix(width, height);
+    }
 
+
+    private void initializeViewMatrix() {
+        // Position the eye in front of the origin.
+        final float eyeX = 0.0f;
+        final float eyeY = 0.5f;
+        final float eyeZ = 3.0f;
+
+        // We are looking toward the distance
+        final float lookX = 0.0f;
+        final float lookY = 0.0f;
+        final float lookZ = 0.0f;
+
+        // Set our up vector. This is where our head would be pointing were we
+        // holding the camera.
+        final float upX = 0.0f;
+        final float upY = 1.0f;
+        final float upZ = 0.0f;
+
+        // Set the view matrix. This matrix can be said to represent the camera
+        // position.
+        // NOTE: In OpenGL 1, a ModelView matrix is used, which is a combination
+        // of a model and view matrix. In OpenGL 2, we can keep track of these
+        // matrices separately if we choose.
+        Matrix.setLookAtM(viewMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
+    }
+
+    private void initializeGLParams() {
+        GLES20.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+        GLES20.glEnable(GLES20.GL_CULL_FACE);
+        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+    }
+
+    private void initializeProjectionMatrix(float width, int height) {
         // Create a new perspective projection matrix. The height will stay the
         // same while the width will vary as per aspect ratio.
-        final float ratio = (float) width / height;
+        final float ratio = width / height;
         final float left = -ratio;
         final float right = ratio;
         final float bottom = -1.0f;
@@ -356,6 +364,10 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         GLES20.glUniformMatrix4fv(mvpMatrixUniform, 1, false, mvpMatrix, 0);
 
         if (null != avatar) {
+            if (!hasBuffer) {
+                avatar.genBuffers();
+                hasBuffer = true;
+            }
             avatar.draw(positionAttribute, normalAttribute, mTextureCoordinateHandle);
         }
     }
