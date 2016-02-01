@@ -355,7 +355,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         // Draw the avatar.
         // Translate the avatar into the screen.
         Matrix.setIdentityM(modelMatrix, 0);
-        Matrix.scaleM(modelMatrix, 0, 3.0f, 3.0f, 3.0f);
+        Matrix.scaleM(modelMatrix, 0, 2.5f, 2.5f, 2.5f);
         Matrix.translateM(modelMatrix, 0, 0.0f, 0.12f, 0.0f);
 
         // Set a matrix that contains the current rotation.
