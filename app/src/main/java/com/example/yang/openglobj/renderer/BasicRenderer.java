@@ -7,7 +7,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.yang.openglobj.R;
-import com.example.yang.openglobj.model.Star;
+import com.example.yang.openglobj.model.Avatar;
 import com.example.yang.openglobj.phone.MainActivity;
 import com.example.yang.openglobj.util.ShaderHelper;
 import com.example.yang.openglobj.util.TextResourceReader;
@@ -126,7 +126,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     /**
      * The current draw object.
      */
-    private Star star;
+    private Avatar avatar;
 
     /**
      * Thread executor for generating cube data in the background.
@@ -154,7 +154,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         @Override
         public void run() {
             try {
-                star = new Star(mainActivity.getResources());
+                avatar = new Avatar(mainActivity.getResources());
                 // Run on the GL thread -- the same thread the other members of the renderer run in.
                 mGlSurfaceView.queueEvent(new Runnable() {
                     @Override
@@ -163,11 +163,11 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
                         System.gc();
 
                         try {
-                            star.genBuffers();
+                            avatar.genBuffers();
                         } catch (OutOfMemoryError err) {
-                            if (star != null) {
-                                star.release();
-                                star = null;
+                            if (avatar != null) {
+                                avatar.release();
+                                avatar = null;
                             }
 
                             // Not supposed to manually call this, but Dalvik sometimes needs some additional prodding to clean up the heap.
@@ -183,9 +183,9 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
                     }
                 });
             } catch (OutOfMemoryError e) {
-                if (null != star) {
-                    star.release();
-                    star = null;
+                if (null != avatar) {
+                    avatar.release();
+                    avatar = null;
                 }
                 // Not supposed to manually call this, but Dalvik sometimes needs some additional prodding to clean up the heap.
                 System.gc();
@@ -355,8 +355,8 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         // Pass in the combined matrix.
         GLES20.glUniformMatrix4fv(mvpMatrixUniform, 1, false, mvpMatrix, 0);
 
-        if (null != star) {
-            star.draw(positionAttribute, normalAttribute, mTextureCoordinateHandle);
+        if (null != avatar) {
+            avatar.draw(positionAttribute, normalAttribute, mTextureCoordinateHandle);
         }
     }
 }
