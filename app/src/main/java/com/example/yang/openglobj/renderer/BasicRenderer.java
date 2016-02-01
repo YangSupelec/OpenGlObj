@@ -32,7 +32,6 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
      * References to other main objects.
      */
     private final MainActivity mainActivity;
-    private final GLSurfaceView mGlSurfaceView;
 
     /**
      * Store the model matrix. This matrix is used to move models from object
@@ -137,9 +136,8 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     /**
      * Initialize the model data.
      */
-    public BasicRenderer(final MainActivity mainActivity, final GLSurfaceView glSurfaceView) {
+    public BasicRenderer(final MainActivity mainActivity) {
         this.mainActivity = mainActivity;
-        this.mGlSurfaceView = glSurfaceView;
         generateAvatarData();
     }
 

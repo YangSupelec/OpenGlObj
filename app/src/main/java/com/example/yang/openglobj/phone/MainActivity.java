@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
             getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
             // Set the renderer to our demo renderer, defined below.
-            renderer = new BasicRenderer(this, glSurfaceView);
+            renderer = new BasicRenderer(this);
             glSurfaceView.setRenderer(renderer, displayMetrics.density);
             rendererSet = true;
         }
