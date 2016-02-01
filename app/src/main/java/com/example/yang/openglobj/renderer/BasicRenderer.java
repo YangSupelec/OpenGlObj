@@ -242,13 +242,13 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
 
         // Position the eye in front of the origin.
         final float eyeX = 0.0f;
-        final float eyeY = 0.0f;
-        final float eyeZ = -0.5f;
+        final float eyeY = 0.5f;
+        final float eyeZ = 3.0f;
 
         // We are looking toward the distance
         final float lookX = 0.0f;
         final float lookY = 0.0f;
-        final float lookZ = -5.0f;
+        final float lookZ = 0.0f;
 
         // Set our up vector. This is where our head would be pointing were we
         // holding the camera.
@@ -299,7 +299,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         final float bottom = -1.0f;
         final float top = 1.0f;
         final float near = 1.0f;
-        final float far = 10.0f;
+        final float far = 20.0f;
 
         Matrix.frustumM(projectionMatrix, 0, left, right, bottom, top, near, far);
     }
@@ -343,7 +343,8 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         // Draw the avatar.
         // Translate the avatar into the screen.
         Matrix.setIdentityM(modelMatrix, 0);
-        Matrix.translateM(modelMatrix, 0, 0.0f, 0.30f, -1.75f);
+        Matrix.scaleM(modelMatrix, 0, 3.0f, 3.0f, 3.0f);
+        Matrix.translateM(modelMatrix, 0, 0.0f, 0.12f, 0.0f);
 
         // Set a matrix that contains the current rotation.
         Matrix.setIdentityM(currentRotation, 0);
