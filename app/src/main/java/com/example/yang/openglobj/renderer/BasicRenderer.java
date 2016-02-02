@@ -26,22 +26,19 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
 
     private final MainActivity mainActivity;
 
-    private final float[] modelMatrix = new float[16];
+    protected final float[] modelMatrix = new float[16];
     private final float[] viewMatrix = new float[16];
     private final float[] projectionMatrix = new float[16];
     private final float[] mvpMatrix = new float[16];
 
     private final float[] accumulatedRotation = new float[16];
-    private final float[] currentRotation = new float[16];
+    protected final float[] currentRotation = new float[16];
     private final float[] temporaryMatrix = new float[16];
 
     private int program;
     private int programHair;
     private int mTextureDataHandle;
     private int mTextureDataHandleForHair;
-
-    public volatile float deltaX;
-    public volatile float deltaY;
 
     protected boolean isInitialize = true;
     protected boolean hasBuffer = false;
@@ -189,18 +186,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 glUnused) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
-        // Draw the avatar.
-        // Translate the avatar into the screen.
-        Matrix.setIdentityM(modelMatrix, 0);
-        Matrix.scaleM(modelMatrix, 0, 2.5f, 2.5f, 2.5f);
-        Matrix.translateM(modelMatrix, 0, 0.0f, 0.12f, 0.0f);
-
-        // Set a matrix that contains the current rotation.
-        Matrix.setIdentityM(currentRotation, 0);
-        Matrix.rotateM(currentRotation, 0, deltaX, 0.0f, 1.0f, 0.0f);
-        deltaX = 0.0f;
-        deltaY = 0.0f;
-
+        handleGesture();
         initializeModelMatrix();
         handleMatrixTrans();
 
@@ -215,6 +201,10 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
             hair.draw();
             avatar.draw();
         }
+    }
+
+    protected void handleGesture() {
+
     }
 
     private void handleMatrixTrans() {

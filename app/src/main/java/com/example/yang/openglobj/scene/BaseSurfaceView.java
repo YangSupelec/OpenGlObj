@@ -8,13 +8,14 @@ import android.widget.Toast;
 
 import com.example.yang.openglobj.R;
 import com.example.yang.openglobj.renderer.BasicRenderer;
+import com.example.yang.openglobj.renderer.GestureBasicRenderer;
 import com.example.yang.openglobj.util.ErrorHandler;
 
 /**
  * Created by yang on 29/01/16.
  */
 public class BaseSurfaceView extends GLSurfaceView implements ErrorHandler {
-    private BasicRenderer basicRenderer;
+    private GestureBasicRenderer basicRenderer;
 
     // Offsets for touch events
     private float previousX;
@@ -90,7 +91,7 @@ public class BaseSurfaceView extends GLSurfaceView implements ErrorHandler {
     }
 
     // Hides superclass method.
-    public void setRenderer(BasicRenderer renderer, float density)
+    public void setRenderer(GestureBasicRenderer renderer, float density)
     {
         this.basicRenderer = renderer;
         this.density = density;
