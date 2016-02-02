@@ -91,9 +91,6 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         }
     }
 
-    public void screenShot() {
-    }
-
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 

@@ -4,6 +4,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -11,6 +12,9 @@ import android.view.View;
 import com.example.yang.openglobj.R;
 import com.example.yang.openglobj.renderer.ShareGesBaseRenderer;
 import com.example.yang.openglobj.scene.BaseSurfaceView;
+
+import java.io.File;
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -84,12 +88,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void screenShot() {
-        glSurfaceView.queueEvent(new Runnable() {
-            @Override
-            public void run() {
-                renderer.screenShot();
-            }
-        });
+        if (renderer.rendererFinished()) {
+            glSurfaceView.queueEvent(new Runnable() {
+                @Override
+                public void run() {
+                    final String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsolutePath();
+                    File dir = new File(path + "/OpenGl");
+                    if (!dir.exists())
+                        dir.mkdirs();
+                    File file = new File(dir, "share.png");
+                    if (!file.exists())
+                        try {
+                            file.createNewFile();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    renderer.screenShot(file);
+                }
+            });
+        }
     }
 
     private void showInfo() {

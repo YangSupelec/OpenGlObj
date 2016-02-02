@@ -61,7 +61,7 @@ public class GestureBasicRenderer extends BasicRenderer {
             mScaleDetector.onTouchEvent(me);
     }
 
-    private boolean rendererFinished() {
+    public boolean rendererFinished() {
         return hasBuffer;
     }
 
