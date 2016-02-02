@@ -7,7 +7,6 @@ import android.view.MotionEvent;
 import android.widget.Toast;
 
 import com.example.yang.openglobj.R;
-import com.example.yang.openglobj.renderer.BasicRenderer;
 import com.example.yang.openglobj.renderer.GestureBasicRenderer;
 import com.example.yang.openglobj.util.ErrorHandler;
 
@@ -16,10 +15,6 @@ import com.example.yang.openglobj.util.ErrorHandler;
  */
 public class BaseSurfaceView extends GLSurfaceView implements ErrorHandler {
     private GestureBasicRenderer basicRenderer;
-
-    // Offsets for touch events
-    private float previousX;
-    private float previousY;
 
     private float density;
 
@@ -62,32 +57,9 @@ public class BaseSurfaceView extends GLSurfaceView implements ErrorHandler {
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
-        if (event != null)
-        {
-            float x = event.getX();
-            float y = event.getY();
-
-            if (event.getAction() == MotionEvent.ACTION_MOVE)
-            {
-                if (basicRenderer != null)
-                {
-                    float deltaX = (x - previousX) / density / 2f;
-                    float deltaY = (y - previousY) / density / 2f;
-
-                    basicRenderer.deltaX += deltaX;
-                    basicRenderer.deltaY += deltaY;
-                }
-            }
-
-            previousX = x;
-            previousY = y;
-
-            return true;
-        }
-        else
-        {
-            return super.onTouchEvent(event);
-        }
+        if (basicRenderer != null)
+            basicRenderer.onTouchEvent(event);
+        return true;
     }
 
     // Hides superclass method.
