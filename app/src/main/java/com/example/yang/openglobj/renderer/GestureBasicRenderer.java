@@ -20,9 +20,11 @@ public class GestureBasicRenderer extends BasicRenderer {
 
     private static final float MIN_SCALE = 0.8f;
     private static final float MAX_SCALE = 1.5f;
+    private static final float LIMITE_SLIDE = 1.6f;
+    private static final int RATE_SLIDE = 1000;
 
     public volatile float mRotate;
-    public volatile float deltaY;
+    public volatile float mSlide;
     public volatile float mScale = 1.0f;
 
     public GestureBasicRenderer(MainActivity mainActivity) {
@@ -37,13 +39,12 @@ public class GestureBasicRenderer extends BasicRenderer {
         // Translate the avatar into the screen.
         Matrix.setIdentityM(modelMatrix, 0);
         Matrix.scaleM(modelMatrix, 0, 2.5f * mScale, 2.5f * mScale, 2.5f * mScale);
-        Matrix.translateM(modelMatrix, 0, 0.0f, 0.12f, 0.0f);
+        Matrix.translateM(modelMatrix, 0, 0.0f, 0.12f + mSlide, 0.0f);
 
         // Set a matrix that contains the current rotation.
         Matrix.setIdentityM(currentRotation, 0);
         Matrix.rotateM(currentRotation, 0, mRotate, 0.0f, 1.0f, 0.0f);
         mRotate = 0.0f;
-        deltaY = 0.0f;
     }
 
     public void onTouchEvent(MotionEvent me) {
@@ -94,6 +95,9 @@ public class GestureBasicRenderer extends BasicRenderer {
             if (Math.abs(distanceX) > Math.abs(distanceY)) {
                 mRotate = -distanceX;
             } else {
+                mSlide += distanceY / (RATE_SLIDE * mScale);
+                mSlide = Math.max(mSlide, -LIMITE_SLIDE / mScale);
+                mSlide = Math.min(mSlide, LIMITE_SLIDE / mScale);
             }
             try {
                 Thread.sleep(5);
