@@ -9,7 +9,7 @@ import android.util.DisplayMetrics;
 import android.view.View;
 
 import com.example.yang.openglobj.R;
-import com.example.yang.openglobj.renderer.GestureBasicRenderer;
+import com.example.yang.openglobj.renderer.ShareGesBaseRenderer;
 import com.example.yang.openglobj.scene.BaseSurfaceView;
 
 public class MainActivity extends AppCompatActivity {
@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
      * Hold a reference to our GLSurfaceView
      */
     private BaseSurfaceView glSurfaceView;
-    private GestureBasicRenderer renderer;
+    private ShareGesBaseRenderer renderer;
     private boolean rendererSet = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
             getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
             // Set the renderer to our demo renderer, defined below.
-            renderer = new GestureBasicRenderer(this);
+            renderer = new ShareGesBaseRenderer(this);
             glSurfaceView.setRenderer(renderer, displayMetrics.density);
             rendererSet = true;
         }

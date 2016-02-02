@@ -7,14 +7,14 @@ import android.view.MotionEvent;
 import android.widget.Toast;
 
 import com.example.yang.openglobj.R;
-import com.example.yang.openglobj.renderer.GestureBasicRenderer;
+import com.example.yang.openglobj.renderer.ShareGesBaseRenderer;
 import com.example.yang.openglobj.util.ErrorHandler;
 
 /**
  * Created by yang on 29/01/16.
  */
 public class BaseSurfaceView extends GLSurfaceView implements ErrorHandler {
-    private GestureBasicRenderer basicRenderer;
+    private ShareGesBaseRenderer basicRenderer;
 
     private float density;
 
@@ -63,7 +63,7 @@ public class BaseSurfaceView extends GLSurfaceView implements ErrorHandler {
     }
 
     // Hides superclass method.
-    public void setRenderer(GestureBasicRenderer renderer, float density)
+    public void setRenderer(ShareGesBaseRenderer renderer, float density)
     {
         this.basicRenderer = renderer;
         this.density = density;
