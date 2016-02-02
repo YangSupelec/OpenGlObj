@@ -3,6 +3,6 @@
     <string name="action_settings">Settings</string>
     <string name="error_could_not_create_vbo">Could not create vertex buffer object: %s</string>
     <string name="error_unknown">Unknown error: %s</string>
-    <string name="decrease_cube_count">DECREASE</string>
-    <string name="increase_cube_count">INCREASE</string>
+    <string name="share">SHARE</string>
+    <string name="info">INFO</string>
 </resources>
