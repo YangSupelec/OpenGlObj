@@ -17,7 +17,7 @@ import com.example.yang.openglobj.scene.BaseSurfaceView;
 import java.io.File;
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity {
+public class HomeActivity extends AppCompatActivity {
 
     /**
      * Hold a reference to our GLSurfaceView
@@ -111,6 +111,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showInfo() {
-        startActivity(new Intent(MainActivity.this, InfoActivity.class));
+        startActivity(new Intent(HomeActivity.this, PostHomeActivity.class));
     }
 }

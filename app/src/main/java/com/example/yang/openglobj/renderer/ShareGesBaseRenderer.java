@@ -2,7 +2,7 @@ package com.example.yang.openglobj.renderer;
 
 import android.graphics.Bitmap;
 
-import com.example.yang.openglobj.phone.MainActivity;
+import com.example.yang.openglobj.phone.HomeActivity;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,7 +22,7 @@ public class ShareGesBaseRenderer extends GestureBasicRenderer{
     private File file;
     private int width, height;
 
-    public ShareGesBaseRenderer(MainActivity mainActivity) {
+    public ShareGesBaseRenderer(HomeActivity mainActivity) {
         super(mainActivity);
     }
 

@@ -9,7 +9,7 @@ import android.widget.Toast;
 import com.example.yang.openglobj.R;
 import com.example.yang.openglobj.model.Avatar;
 import com.example.yang.openglobj.model.Hair;
-import com.example.yang.openglobj.phone.MainActivity;
+import com.example.yang.openglobj.phone.HomeActivity;
 import com.example.yang.openglobj.util.ShaderHelper;
 import com.example.yang.openglobj.util.TextResourceReader;
 import com.example.yang.openglobj.util.TextureHelper;
@@ -24,7 +24,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
 
     private static final String TAG = "BasicRenderer";
 
-    private final MainActivity mainActivity;
+    private final HomeActivity mainActivity;
 
     protected final float[] modelMatrix = new float[16];
     private final float[] viewMatrix = new float[16];
@@ -48,7 +48,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
 
     private final ExecutorService mSingleThreadedExecutor = Executors.newSingleThreadExecutor();
 
-    public BasicRenderer(final MainActivity mainActivity) {
+    public BasicRenderer(final HomeActivity mainActivity) {
         this.mainActivity = mainActivity;
         generateData();
     }
