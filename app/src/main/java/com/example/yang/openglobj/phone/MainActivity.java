@@ -2,6 +2,7 @@ package com.example.yang.openglobj.phone;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ConfigurationInfo;
 import android.os.Bundle;
 import android.os.Environment;
@@ -110,5 +111,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showInfo() {
+        startActivity(new Intent(MainActivity.this, InfoActivity.class));
     }
 }
