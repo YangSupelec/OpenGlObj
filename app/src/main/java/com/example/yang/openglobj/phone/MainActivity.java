@@ -50,17 +50,17 @@ public class MainActivity extends AppCompatActivity {
             rendererSet = true;
         }
 
-        findViewById(R.id.button_decrease_num_cubes).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.share).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                decreaseCubeCount();
+                screenShot();
             }
         });
 
-        findViewById(R.id.button_increase_num_cubes).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.info).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                increaseCubeCount();
+                showInfo();
             }
         });
     }
@@ -83,21 +83,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void decreaseCubeCount() {
+    private void screenShot() {
         glSurfaceView.queueEvent(new Runnable() {
             @Override
             public void run() {
-                renderer.decreaseCubeCount();
+                renderer.screenShot();
             }
         });
     }
 
-    private void increaseCubeCount() {
-        glSurfaceView.queueEvent(new Runnable() {
-            @Override
-            public void run() {
-                renderer.increaseCubeCount();
-            }
-        });
+    private void showInfo() {
     }
 }

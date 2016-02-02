@@ -91,10 +91,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         }
     }
 
-    public void decreaseCubeCount() {
-    }
-
-    public void increaseCubeCount() {
+    public void screenShot() {
     }
 
     @Override
