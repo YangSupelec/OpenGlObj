@@ -22,6 +22,7 @@ public class GestureBasicRenderer extends BasicRenderer {
     private static final float MAX_SCALE = 1.5f;
     private static final float LIMITE_SLIDE = 1.6f;
     private static final int RATE_SLIDE = 1000;
+    private float SUM_ROTATE = 0;
 
     public volatile float mRotate;
     public volatile float mSlide;
@@ -94,6 +95,7 @@ public class GestureBasicRenderer extends BasicRenderer {
             Log.d(TAG, "on gesture event");
             if (Math.abs(distanceX) > Math.abs(distanceY)) {
                 mRotate = -distanceX;
+                SUM_ROTATE += mRotate;
             } else {
                 mSlide += distanceY / (RATE_SLIDE * mScale);
                 mSlide = Math.max(mSlide, -LIMITE_SLIDE / mScale);
@@ -109,6 +111,9 @@ public class GestureBasicRenderer extends BasicRenderer {
         @Override
         public boolean onDoubleTap(MotionEvent e) {
             Log.d(TAG, "on double tap event");
+            mSlide = 0;
+            mScale = 1;
+            mRotate = -SUM_ROTATE;
             return true;
         }
     }
