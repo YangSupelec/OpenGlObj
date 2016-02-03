@@ -1,12 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <ImageButton
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_centerInParent="true"
+        android:src="@drawable/ic_close_cross"
+        android:background="@drawable/back_selector"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
+        android:layout_alignParentBottom="true"
+        android:layout_gravity="center_horizontal"
         android:orientation="horizontal">
         <Button
             android:id="@+id/back"
@@ -22,4 +31,4 @@
             android:text="@string/home" />
     </LinearLayout>
 
-</FrameLayout>
+</RelativeLayout>
