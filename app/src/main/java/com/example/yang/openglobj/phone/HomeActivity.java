@@ -25,6 +25,7 @@ public class HomeActivity extends AppCompatActivity {
     private BaseSurfaceView glSurfaceView;
     private ShareGesBaseRenderer renderer;
     private boolean rendererSet = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -112,5 +113,14 @@ public class HomeActivity extends AppCompatActivity {
 
     private void showInfo() {
         startActivity(new Intent(HomeActivity.this, PostHomeActivity.class));
+    }
+
+    public static void actionStart(Context context, boolean isCreateNewInstance) {
+        Intent intent = new Intent(context, HomeActivity.class);
+        intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
+        if (!isCreateNewInstance) {
+            intent.addFlags(intent.FLAG_ACTIVITY_SINGLE_TOP);
+        }
+        context.startActivity(intent);
     }
 }

@@ -17,14 +17,14 @@ public class PostHomeActivity extends AppCompatActivity {
         findViewById(R.id.back).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+                HomeActivity.actionStart(PostHomeActivity.this, false);
             }
         });
 
         findViewById(R.id.home).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(PostHomeActivity.this, HomeActivity.class));
+                HomeActivity.actionStart(PostHomeActivity.this, true);
             }
         });
     }
