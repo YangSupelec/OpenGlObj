@@ -10,6 +10,7 @@ import com.example.yang.openglobj.R;
 import com.example.yang.openglobj.model.Avatar;
 import com.example.yang.openglobj.model.Hair;
 import com.example.yang.openglobj.phone.HomeActivity;
+import com.example.yang.openglobj.scene.BaseSurfaceView;
 import com.example.yang.openglobj.util.ShaderHelper;
 import com.example.yang.openglobj.util.TextResourceReader;
 import com.example.yang.openglobj.util.TextureHelper;
@@ -25,6 +26,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     private static final String TAG = "BasicRenderer";
 
     private final HomeActivity mainActivity;
+    private final BaseSurfaceView mBaseSurfaceView;
 
     protected final float[] modelMatrix = new float[16];
     private final float[] viewMatrix = new float[16];
@@ -48,8 +50,9 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
 
     private final ExecutorService mSingleThreadedExecutor = Executors.newSingleThreadExecutor();
 
-    public BasicRenderer(final HomeActivity mainActivity) {
+    public BasicRenderer(final HomeActivity mainActivity, final BaseSurfaceView baseSurfaceView) {
         this.mainActivity = mainActivity;
+        this.mBaseSurfaceView = baseSurfaceView;
         generateData();
     }
 

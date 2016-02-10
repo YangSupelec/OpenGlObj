@@ -51,7 +51,7 @@ public class HomeActivity extends AppCompatActivity {
             getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
             // Set the renderer to our demo renderer, defined below.
-            renderer = new ShareGesBaseRenderer(this);
+            renderer = new ShareGesBaseRenderer(this, glSurfaceView);
             glSurfaceView.setRenderer(renderer, displayMetrics.density);
             rendererSet = true;
         }

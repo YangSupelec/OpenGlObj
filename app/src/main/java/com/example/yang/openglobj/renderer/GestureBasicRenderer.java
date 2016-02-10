@@ -8,6 +8,7 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
 import com.example.yang.openglobj.phone.HomeActivity;
+import com.example.yang.openglobj.scene.BaseSurfaceView;
 
 /**
  * Created by yang on 02/02/16.
@@ -28,8 +29,8 @@ public class GestureBasicRenderer extends BasicRenderer {
     public volatile float mSlide;
     public volatile float mScale = 1.0f;
 
-    public GestureBasicRenderer(HomeActivity mainActivity) {
-        super(mainActivity);
+    public GestureBasicRenderer(HomeActivity mainActivity, BaseSurfaceView baseSurfaceView) {
+        super(mainActivity, baseSurfaceView);
         mScaleDetector = new ScaleGestureDetector(mainActivity, new ScaleListener());
         mGestureDetector = new GestureDetectorCompat(mainActivity, new GestureListener());
     }
