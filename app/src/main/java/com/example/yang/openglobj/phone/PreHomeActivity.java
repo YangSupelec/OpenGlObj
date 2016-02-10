@@ -75,7 +75,7 @@ public class PreHomeActivity extends ListActivity {
     }
 
     private void addNote() {
-        String name = editText.getText().toString();
+        /*String name = editText.getText().toString();
         editText.setText("");
 
         final DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
@@ -89,8 +89,8 @@ public class PreHomeActivity extends ListActivity {
             getUserDao().insert(user);
             Log.d(TAG, "Inserted new note, ID: " + user.getId());
             cursor.requery();
-        }
-
+        }*/
+        HomeActivity.actionStart(this, true);
     }
 
     private void search() {
