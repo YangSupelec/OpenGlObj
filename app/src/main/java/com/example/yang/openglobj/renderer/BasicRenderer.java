@@ -105,14 +105,14 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
 
         program = ShaderHelper.linkProgram(
                 ShaderHelper.compileVertexShader(
-                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.avatar_vertex_shader)),
+                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.base_vertex_shader)),
                 ShaderHelper.compileFragmentShader(
                         TextResourceReader.readTextFileFromResource(mainActivity, R.raw.avatar_fragment_shader))
         );
         Log.d(TAG, "avatar program : " + program);
         programHair = ShaderHelper.linkProgram(
                 ShaderHelper.compileVertexShader(
-                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.hair_vertex_shader)),
+                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.base_vertex_shader)),
                 ShaderHelper.compileFragmentShader(
                         TextResourceReader.readTextFileFromResource(mainActivity, R.raw.hair_fragment_shader))
         );
