@@ -43,6 +43,7 @@ public class Avatar extends BaseObject3D {
      */
     private int mTextureUniformHandle;
     private int mTextureCoordinateHandle;
+    private int materialHandle;
 
     int mAvatarPositionsBufferIdx;
     int mAvatarNormalsBufferIdx;
@@ -71,6 +72,7 @@ public class Avatar extends BaseObject3D {
         positionAttribute = GLES20.glGetAttribLocation(program, POSITION_ATTRIBUTE);
         normalAttribute = GLES20.glGetAttribLocation(program, NORMAL_ATTRIBUTE);
         mTextureUniformHandle = GLES20.glGetUniformLocation(program, TEX_COORD_UNIFORM_AVATAR);
+        materialHandle = GLES20.glGetUniformLocation(program, TEX_COORD_UNIFORM_TYPE);
         mTextureCoordinateHandle = GLES20.glGetAttribLocation(program, TEX_COORD_ATTRIBUTE);
 
         // Set the active texture unit to texture unit 1.
@@ -81,6 +83,7 @@ public class Avatar extends BaseObject3D {
 
         // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 1.
         GLES20.glUniform1i(mTextureUniformHandle, 1);
+        GLES20.glUniform1i(materialHandle, 1);
     }
 
     public void genBuffers() {

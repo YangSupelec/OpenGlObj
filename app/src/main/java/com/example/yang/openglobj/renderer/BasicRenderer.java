@@ -185,8 +185,8 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
                 hasBuffer = true;
             }
             hair.genHandle(program, mTextureDataHandleForHair);
-            avatar.genHandle(program, mTextureDataHandle);
             hair.draw();
+            avatar.genHandle(program, mTextureDataHandle);
             avatar.draw();
         }
     }

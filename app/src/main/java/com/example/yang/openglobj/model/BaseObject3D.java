@@ -20,9 +20,10 @@ public class BaseObject3D {
     protected static final String MV_MATRIX_UNIFORM = "u_MVMatrix";
     protected static final String TEX_COORD_UNIFORM_HAIR = "u_Texture_Hair";
     protected static final String TEX_COORD_UNIFORM_AVATAR = "u_Texture_Avatar";
+    protected static final String TEX_COORD_UNIFORM_TYPE = "u_Material";
 
     protected static final String POSITION_ATTRIBUTE = "a_Position";
-    private static final String COLOR_ATTRIBUTE = "a_Color";
+    protected static final String COLOR_ATTRIBUTE = "a_Color";
     protected static final String NORMAL_ATTRIBUTE = "a_Normal";
     protected static final String TEX_COORD_ATTRIBUTE = "a_TexCoordinate";
 
