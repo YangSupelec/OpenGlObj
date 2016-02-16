@@ -1,5 +1,7 @@
 package com.example.yang.openglobj.model;
 
+import com.example.yang.openglobj.parser.ObjParser;
+
 import java.nio.FloatBuffer;
 
 /**
@@ -57,4 +59,13 @@ public class BaseObject3D {
     protected int mTextureUniformHandle;
     protected int mTextureCoordinateHandle;
     protected int materialHandle;
+
+
+    protected void parse(ObjParser objParser) {
+        objParser.parse();
+        aVertices = objParser.getVertices();
+        aTexCoords = objParser.getTexCoords();
+        aNormals = objParser.getNormals();
+        aIndices = objParser.getIndices();
+    }
 }

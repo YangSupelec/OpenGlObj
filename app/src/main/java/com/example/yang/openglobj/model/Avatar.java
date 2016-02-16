@@ -33,11 +33,7 @@ public class Avatar extends BaseObject3D {
         Log.d(TAG, "starting parsing obj");
 
         ObjParser objParser = new ObjParser(resources, R.raw.generic_avatar_obj);
-        objParser.parse();
-        aVertices = objParser.getVertices();
-        aTexCoords = objParser.getTexCoords();
-        aNormals = objParser.getNormals();
-        aIndices = objParser.getIndices();
+        parse(objParser);
 
         Log.d(TAG, "parsing obj finished");
     }
