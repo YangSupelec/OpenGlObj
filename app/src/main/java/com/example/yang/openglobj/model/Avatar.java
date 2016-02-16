@@ -65,22 +65,22 @@ public class Avatar extends BaseObject3D {
         // Set our per-vertex lighting program.
         GLES20.glUseProgram(program);
 
-        // Set program handles for cube drawing.
+        // Set program handles for model drawing.
         mvpMatrixUniform = GLES20.glGetUniformLocation(program, MVP_MATRIX_UNIFORM);
         mvMatrixUniform = GLES20.glGetUniformLocation(program, MV_MATRIX_UNIFORM);
         positionAttribute = GLES20.glGetAttribLocation(program, POSITION_ATTRIBUTE);
         normalAttribute = GLES20.glGetAttribLocation(program, NORMAL_ATTRIBUTE);
-        mTextureUniformHandle = GLES20.glGetUniformLocation(program, TEX_COORD_UNIFORM);
+        mTextureUniformHandle = GLES20.glGetUniformLocation(program, TEX_COORD_UNIFORM_AVATAR);
         mTextureCoordinateHandle = GLES20.glGetAttribLocation(program, TEX_COORD_ATTRIBUTE);
 
-        // Set the active texture unit to texture unit 0.
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        // Set the active texture unit to texture unit 1.
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
 
         // Bind the texture to this unit.
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle);
 
-        // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
-        GLES20.glUniform1i(mTextureUniformHandle, 0);
+        // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 1.
+        GLES20.glUniform1i(mTextureUniformHandle, 1);
     }
 
     public void genBuffers() {

@@ -38,7 +38,6 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     private final float[] temporaryMatrix = new float[16];
 
     private int program;
-    private int programHair;
     private int mTextureDataHandle;
     private int mTextureDataHandleForHair;
 
@@ -107,16 +106,8 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
                 ShaderHelper.compileVertexShader(
                         TextResourceReader.readTextFileFromResource(mainActivity, R.raw.base_vertex_shader)),
                 ShaderHelper.compileFragmentShader(
-                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.avatar_fragment_shader))
+                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.base_fragment_shader))
         );
-        Log.d(TAG, "avatar program : " + program);
-        programHair = ShaderHelper.linkProgram(
-                ShaderHelper.compileVertexShader(
-                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.base_vertex_shader)),
-                ShaderHelper.compileFragmentShader(
-                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.hair_fragment_shader))
-        );
-        Log.d(TAG, "hair program : " + programHair);
 
         // Load the texture
         mTextureDataHandle = TextureHelper.loadTexture(mainActivity, R.drawable.generic_avatar);
@@ -193,7 +184,7 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
                 hair.genBuffers();
                 hasBuffer = true;
             }
-            hair.genHandle(programHair, mTextureDataHandleForHair);
+            hair.genHandle(program, mTextureDataHandleForHair);
             avatar.genHandle(program, mTextureDataHandle);
             hair.draw();
             avatar.draw();

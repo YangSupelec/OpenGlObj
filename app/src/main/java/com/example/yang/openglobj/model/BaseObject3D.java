@@ -18,7 +18,8 @@ public class BaseObject3D {
      */
     protected static final String MVP_MATRIX_UNIFORM = "u_MVPMatrix";
     protected static final String MV_MATRIX_UNIFORM = "u_MVMatrix";
-    protected static final String TEX_COORD_UNIFORM = "u_Texture";
+    protected static final String TEX_COORD_UNIFORM_HAIR = "u_Texture_Hair";
+    protected static final String TEX_COORD_UNIFORM_AVATAR = "u_Texture_Avatar";
 
     protected static final String POSITION_ATTRIBUTE = "a_Position";
     private static final String COLOR_ATTRIBUTE = "a_Color";
