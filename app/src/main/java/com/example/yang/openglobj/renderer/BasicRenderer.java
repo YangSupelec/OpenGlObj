@@ -26,7 +26,6 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     private static final String TAG = "BasicRenderer";
 
     private final HomeActivity mainActivity;
-    private final BaseSurfaceView mBaseSurfaceView;
 
     protected final float[] modelMatrix = new float[16];
     private final float[] viewMatrix = new float[16];
@@ -51,7 +50,6 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
 
     public BasicRenderer(final HomeActivity mainActivity, final BaseSurfaceView baseSurfaceView) {
         this.mainActivity = mainActivity;
-        this.mBaseSurfaceView = baseSurfaceView;
         generateData();
     }
 
