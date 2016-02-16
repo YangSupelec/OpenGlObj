@@ -38,17 +38,7 @@ public class Hair extends BaseObject3D {
     }
 
     public void genHandle(int program, int textureHandle) {
-        // Set our per-vertex lighting program.
-        GLES20.glUseProgram(program);
-
-        // Set program handles for model drawing.
-        mvpMatrixUniform = GLES20.glGetUniformLocation(program, MVP_MATRIX_UNIFORM);
-        mvMatrixUniform = GLES20.glGetUniformLocation(program, MV_MATRIX_UNIFORM);
-        positionAttribute = GLES20.glGetAttribLocation(program, POSITION_ATTRIBUTE);
-        normalAttribute = GLES20.glGetAttribLocation(program, NORMAL_ATTRIBUTE);
-        mTextureUniformHandle = GLES20.glGetUniformLocation(program, TEX_COORD_UNIFORM_HAIR);
-        materialHandle = GLES20.glGetUniformLocation(program, TEX_COORD_UNIFORM_TYPE);
-        mTextureCoordinateHandle = GLES20.glGetAttribLocation(program, TEX_COORD_ATTRIBUTE);
+        genHandle(program);
 
         // Set the active texture unit to texture unit 0.
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);

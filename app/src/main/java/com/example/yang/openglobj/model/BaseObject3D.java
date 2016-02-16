@@ -1,5 +1,7 @@
 package com.example.yang.openglobj.model;
 
+import android.opengl.GLES20;
+
 import com.example.yang.openglobj.parser.ObjParser;
 
 import java.nio.FloatBuffer;
@@ -67,5 +69,19 @@ public class BaseObject3D {
         aTexCoords = objParser.getTexCoords();
         aNormals = objParser.getNormals();
         aIndices = objParser.getIndices();
+    }
+
+    protected void genHandle(int program) {
+        // Set our per-vertex lighting program.
+        GLES20.glUseProgram(program);
+
+        // Set program handles for model drawing.
+        mvpMatrixUniform = GLES20.glGetUniformLocation(program, MVP_MATRIX_UNIFORM);
+        mvMatrixUniform = GLES20.glGetUniformLocation(program, MV_MATRIX_UNIFORM);
+        positionAttribute = GLES20.glGetAttribLocation(program, POSITION_ATTRIBUTE);
+        normalAttribute = GLES20.glGetAttribLocation(program, NORMAL_ATTRIBUTE);
+        mTextureUniformHandle = GLES20.glGetUniformLocation(program, TEX_COORD_UNIFORM_AVATAR);
+        materialHandle = GLES20.glGetUniformLocation(program, TEX_COORD_UNIFORM_TYPE);
+        mTextureCoordinateHandle = GLES20.glGetAttribLocation(program, TEX_COORD_ATTRIBUTE);
     }
 }
