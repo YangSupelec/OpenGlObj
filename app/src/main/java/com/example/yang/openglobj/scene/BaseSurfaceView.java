@@ -16,8 +16,6 @@ import com.example.yang.openglobj.util.ErrorHandler;
 public class BaseSurfaceView extends GLSurfaceView implements ErrorHandler {
     private ShareGesBaseRenderer basicRenderer;
 
-    private float density;
-
     public BaseSurfaceView(Context context) {
         super(context);
     }
@@ -63,10 +61,9 @@ public class BaseSurfaceView extends GLSurfaceView implements ErrorHandler {
     }
 
     // Hides superclass method.
-    public void setRenderer(ShareGesBaseRenderer renderer, float density)
+    public void setRenderer(ShareGesBaseRenderer renderer)
     {
         this.basicRenderer = renderer;
-        this.density = density;
         super.setRenderer(renderer);
     }
 }

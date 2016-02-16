@@ -7,7 +7,6 @@ import android.content.pm.ConfigurationInfo;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
-import android.util.DisplayMetrics;
 import android.view.View;
 
 import com.example.yang.openglobj.R;
@@ -47,12 +46,9 @@ public class HomeActivity extends AppCompatActivity {
             // Request an OpenGL ES 2.0 compatible context.
             glSurfaceView.setEGLContextClientVersion(2);
 
-            final DisplayMetrics displayMetrics = new DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-
             // Set the renderer to our demo renderer, defined below.
             renderer = new ShareGesBaseRenderer(this, glSurfaceView);
-            glSurfaceView.setRenderer(renderer, displayMetrics.density);
+            glSurfaceView.setRenderer(renderer);
             rendererSet = true;
         }
 
