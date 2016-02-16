@@ -68,6 +68,14 @@ public class BaseObject3D {
     protected int mNormalsBufferIdx;
     protected int mTexCoordsBufferIdx;
 
+    public int getMvpMatrixUniform() {
+        return mvpMatrixUniform;
+    }
+
+    public int getMvMatrixUniform() {
+        return mvMatrixUniform;
+    }
+
     protected void parse(ObjParser objParser) {
         objParser.parse();
         aVertices = objParser.getVertices();
@@ -134,5 +142,36 @@ public class BaseObject3D {
         normalBuffer = null;
         textureBuffer.limit(0);
         textureBuffer = null;
+    }
+
+    public void draw() {
+        // Pass in the position information
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mPositionsBufferIdx);
+        GLES20.glEnableVertexAttribArray(positionAttribute);
+        GLES20.glVertexAttribPointer(positionAttribute, POSITION_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false, 0, 0);
+
+        // Pass in the normal information
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mNormalsBufferIdx);
+        GLES20.glEnableVertexAttribArray(normalAttribute);
+        GLES20.glVertexAttribPointer(normalAttribute, NORMAL_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false, 0, 0);
+
+        // Pass in the texture information
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mTexCoordsBufferIdx);
+        GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
+        GLES20.glVertexAttribPointer(mTextureCoordinateHandle, TEXCOORD_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false,
+                0, 0);
+
+        // Clear the currently bound buffer (so future OpenGL calls do not use this buffer).
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+
+        // Draw the cubes.
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, aIndices.length);
+    }
+
+    public void release() {
+        // Delete buffers from OpenGL's memory
+        final int[] buffersToDelete = new int[]{mPositionsBufferIdx, mNormalsBufferIdx,
+                mTexCoordsBufferIdx};
+        GLES20.glDeleteBuffers(buffersToDelete.length, buffersToDelete, 0);
     }
 }
