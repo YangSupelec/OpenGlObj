@@ -4,6 +4,8 @@ import android.opengl.GLES20;
 
 import com.example.yang.openglobj.parser.ObjParser;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 /**
@@ -86,5 +88,51 @@ public class BaseObject3D {
         mTextureUniformHandle = GLES20.glGetUniformLocation(program, TEX_COORD_UNIFORM_AVATAR);
         materialHandle = GLES20.glGetUniformLocation(program, TEX_COORD_UNIFORM_TYPE);
         mTextureCoordinateHandle = GLES20.glGetAttribLocation(program, TEX_COORD_ATTRIBUTE);
+    }
+
+    public void genBuffers() {
+        ByteBuffer vbb = ByteBuffer.allocateDirect(aVertices.length * BYTES_PER_FLOAT);
+        vbb.order(ByteOrder.nativeOrder());
+        vertexBuffer = vbb.asFloatBuffer();
+        vertexBuffer.put(aVertices);
+        vertexBuffer.position(0);
+
+        ByteBuffer nbb = ByteBuffer.allocateDirect(aNormals.length * BYTES_PER_FLOAT);
+        nbb.order(ByteOrder.nativeOrder());
+        normalBuffer = nbb.asFloatBuffer();
+        normalBuffer.put(aNormals);
+        normalBuffer.position(0);
+
+        ByteBuffer tbb = ByteBuffer.allocateDirect(aTexCoords.length * BYTES_PER_FLOAT);
+        tbb.order(ByteOrder.nativeOrder());
+        textureBuffer = tbb.asFloatBuffer();
+        textureBuffer.put(aTexCoords);
+        textureBuffer.position(0);
+
+        final int buffers[] = new int[3];
+        GLES20.glGenBuffers(3, buffers, 0);
+
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, buffers[0]);
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertexBuffer.capacity() * BYTES_PER_FLOAT, vertexBuffer, GLES20.GL_STATIC_DRAW);
+
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, buffers[1]);
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, normalBuffer.capacity() * BYTES_PER_FLOAT, normalBuffer, GLES20.GL_STATIC_DRAW);
+
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, buffers[2]);
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, textureBuffer.capacity() * BYTES_PER_FLOAT, textureBuffer,
+                GLES20.GL_STATIC_DRAW);
+
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+
+        mPositionsBufferIdx = buffers[0];
+        mNormalsBufferIdx = buffers[1];
+        mTexCoordsBufferIdx = buffers[2];
+
+        vertexBuffer.limit(0);
+        vertexBuffer = null;
+        normalBuffer.limit(0);
+        normalBuffer = null;
+        textureBuffer.limit(0);
+        textureBuffer = null;
     }
 }
