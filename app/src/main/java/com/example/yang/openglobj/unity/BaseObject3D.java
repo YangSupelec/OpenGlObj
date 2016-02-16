@@ -1,4 +1,4 @@
-package com.example.yang.openglobj.model;
+package com.example.yang.openglobj.unity;
 
 import android.opengl.GLES20;
 

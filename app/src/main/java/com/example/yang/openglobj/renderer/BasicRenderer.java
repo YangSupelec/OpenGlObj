@@ -7,8 +7,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.yang.openglobj.R;
-import com.example.yang.openglobj.model.Avatar;
-import com.example.yang.openglobj.model.Hair;
+import com.example.yang.openglobj.unity.Avatar;
+import com.example.yang.openglobj.unity.Hair;
 import com.example.yang.openglobj.phone.HomeActivity;
 import com.example.yang.openglobj.scene.BaseSurfaceView;
 import com.example.yang.openglobj.util.ShaderHelper;
