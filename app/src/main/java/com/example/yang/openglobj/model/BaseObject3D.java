@@ -62,6 +62,9 @@ public class BaseObject3D {
     protected int mTextureCoordinateHandle;
     protected int materialHandle;
 
+    protected int mPositionsBufferIdx;
+    protected int mNormalsBufferIdx;
+    protected int mTexCoordsBufferIdx;
 
     protected void parse(ObjParser objParser) {
         objParser.parse();

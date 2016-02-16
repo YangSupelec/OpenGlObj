@@ -24,10 +24,6 @@ public class Hair extends BaseObject3D {
         return mvMatrixUniform;
     }
 
-    int mHairPositionsBufferIdx;
-    int mHairNormalsBufferIdx;
-    int mHairTexCoordsBufferIdx;
-
     public Hair(Resources resources) {
         Log.d(TAG, "starting parsing obj");
 
@@ -85,9 +81,9 @@ public class Hair extends BaseObject3D {
 
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
-        mHairPositionsBufferIdx = buffers[0];
-        mHairNormalsBufferIdx = buffers[1];
-        mHairTexCoordsBufferIdx = buffers[2];
+        mPositionsBufferIdx = buffers[0];
+        mNormalsBufferIdx = buffers[1];
+        mTexCoordsBufferIdx = buffers[2];
 
         vertexBuffer.limit(0);
         vertexBuffer = null;
@@ -99,17 +95,17 @@ public class Hair extends BaseObject3D {
 
     public void draw() {
         // Pass in the position information
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mHairPositionsBufferIdx);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mPositionsBufferIdx);
         GLES20.glEnableVertexAttribArray(positionAttribute);
         GLES20.glVertexAttribPointer(positionAttribute, POSITION_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false, 0, 0);
 
         // Pass in the normal information
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mHairNormalsBufferIdx);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mNormalsBufferIdx);
         GLES20.glEnableVertexAttribArray(normalAttribute);
         GLES20.glVertexAttribPointer(normalAttribute, NORMAL_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false, 0, 0);
 
         // Pass in the texture information
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mHairTexCoordsBufferIdx);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mTexCoordsBufferIdx);
         GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
         GLES20.glVertexAttribPointer(mTextureCoordinateHandle, TEXCOORD_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false,
                 0, 0);
@@ -123,8 +119,8 @@ public class Hair extends BaseObject3D {
 
     public void release() {
         // Delete buffers from OpenGL's memory
-        final int[] buffersToDelete = new int[]{mHairPositionsBufferIdx, mHairNormalsBufferIdx,
-                mHairTexCoordsBufferIdx};
+        final int[] buffersToDelete = new int[]{mPositionsBufferIdx, mNormalsBufferIdx,
+                mTexCoordsBufferIdx};
         GLES20.glDeleteBuffers(buffersToDelete.length, buffersToDelete, 0);
     }
 }

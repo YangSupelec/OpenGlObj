@@ -25,10 +25,6 @@ public class Avatar extends BaseObject3D {
         return mvMatrixUniform;
     }
 
-    int mAvatarPositionsBufferIdx;
-    int mAvatarNormalsBufferIdx;
-    int mAvatarTexCoordsBufferIdx;
-
     public Avatar(Resources resources) {
         Log.d(TAG, "starting parsing obj");
 
@@ -86,9 +82,9 @@ public class Avatar extends BaseObject3D {
 
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
-        mAvatarPositionsBufferIdx = buffers[0];
-        mAvatarNormalsBufferIdx = buffers[1];
-        mAvatarTexCoordsBufferIdx = buffers[2];
+        mPositionsBufferIdx = buffers[0];
+        mNormalsBufferIdx = buffers[1];
+        mTexCoordsBufferIdx = buffers[2];
 
         vertexBuffer.limit(0);
         vertexBuffer = null;
@@ -100,17 +96,17 @@ public class Avatar extends BaseObject3D {
 
     public void draw() {
         // Pass in the position information
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mAvatarPositionsBufferIdx);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mPositionsBufferIdx);
         GLES20.glEnableVertexAttribArray(positionAttribute);
         GLES20.glVertexAttribPointer(positionAttribute, POSITION_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false, 0, 0);
 
         // Pass in the normal information
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mAvatarNormalsBufferIdx);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mNormalsBufferIdx);
         GLES20.glEnableVertexAttribArray(normalAttribute);
         GLES20.glVertexAttribPointer(normalAttribute, NORMAL_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false, 0, 0);
 
         // Pass in the texture information
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mAvatarTexCoordsBufferIdx);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mTexCoordsBufferIdx);
         GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
         GLES20.glVertexAttribPointer(mTextureCoordinateHandle, TEXCOORD_DATA_SIZE_IN_ELEMENTS, GLES20.GL_FLOAT, false,
                 0, 0);
@@ -124,8 +120,8 @@ public class Avatar extends BaseObject3D {
 
     public void release() {
         // Delete buffers from OpenGL's memory
-        final int[] buffersToDelete = new int[]{mAvatarPositionsBufferIdx, mAvatarNormalsBufferIdx,
-                mAvatarTexCoordsBufferIdx};
+        final int[] buffersToDelete = new int[]{mPositionsBufferIdx, mNormalsBufferIdx,
+                mTexCoordsBufferIdx};
         GLES20.glDeleteBuffers(buffersToDelete.length, buffersToDelete, 0);
     }
 }
