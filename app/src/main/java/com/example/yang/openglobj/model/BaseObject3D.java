@@ -37,4 +37,24 @@ public class BaseObject3D {
     protected FloatBuffer normalBuffer;
     protected FloatBuffer textureBuffer;
     protected FloatBuffer colorBuffer;
+
+    /**
+     * OpenGL handles to our program uniforms.
+     */
+    protected int mvpMatrixUniform;
+    protected int mvMatrixUniform;
+
+    /**
+     * OpenGL handles to our program attributes.
+     */
+    protected int positionAttribute;
+    protected int normalAttribute;
+    protected int colorAttribute;
+
+    /**
+     * This will be used to pass in the texture.
+     */
+    protected int mTextureUniformHandle;
+    protected int mTextureCoordinateHandle;
+    protected int materialHandle;
 }

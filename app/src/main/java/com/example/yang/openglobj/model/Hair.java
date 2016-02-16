@@ -24,26 +24,6 @@ public class Hair extends BaseObject3D {
         return mvMatrixUniform;
     }
 
-    /**
-     * OpenGL handles to our program uniforms.
-     */
-    private int mvpMatrixUniform;
-    private int mvMatrixUniform;
-
-    /**
-     * OpenGL handles to our program attributes.
-     */
-    private int positionAttribute;
-    private int normalAttribute;
-    private int colorAttribute;
-
-    /**
-     * This will be used to pass in the texture.
-     */
-    private int mTextureUniformHandle;
-    private int mTextureCoordinateHandle;
-    private int materialHandle;
-
     int mHairPositionsBufferIdx;
     int mHairNormalsBufferIdx;
     int mHairTexCoordsBufferIdx;
