@@ -199,8 +199,6 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         handleGesture();
-        initializeModelMatrix();
-        handleMatrixTrans();
 
         if (null != avatar && hair != null) {
             if (!hasBuffer) {
@@ -209,9 +207,12 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
                 hasBuffer = true;
             }
             hair.genHandle(program, mTextureDataHandleForHair);
+            initializeModelMatrix();
+            hair.bindBuffer();
+            handleMatrixTrans();
             hair.draw();
             /*avatar.genHandle(program, mTextureDataHandle);
-            avatar.draw();*/
+            avatar.bindBuffer();*/
         }
 
         // Do a complete rotation every 10 seconds.

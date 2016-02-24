@@ -144,7 +144,7 @@ public class BaseObject3D {
         textureBuffer = null;
     }
 
-    public void draw() {
+    public void bindBuffer() {
         // Pass in the position information
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mPositionsBufferIdx);
         GLES20.glEnableVertexAttribArray(positionAttribute);
@@ -163,7 +163,9 @@ public class BaseObject3D {
 
         // Clear the currently bound buffer (so future OpenGL calls do not use this buffer).
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+    }
 
+    public void draw() {
         // Draw the cubes.
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, aIndices.length);
     }
