@@ -3,6 +3,7 @@ package com.example.yang.openglobj.renderer;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -35,6 +36,24 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
     private final float[] accumulatedRotation = new float[16];
     protected final float[] currentRotation = new float[16];
     private final float[] temporaryMatrix = new float[16];
+
+    /**
+     * Stores a copy of the model matrix specifically for the light position.
+     */
+    private float[] mLightModelMatrix = new float[16];
+
+    /** Used to hold a light centered on the origin in model space. We need a 4th coordinate so we can get translations to work when
+     *  we multiply this by our transformation matrices. */
+    private final float[] mLightPosInModelSpace = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
+
+    /** Used to hold the current position of the light in world space (after transformation via model matrix). */
+    private final float[] mLightPosInWorldSpace = new float[4];
+
+    /** Used to hold the transformed position of the light in eye space (after transformation via modelview matrix) */
+    private final float[] mLightPosInEyeSpace = new float[4];
+
+    /** This is a handle to our light point program. */
+    private int mPointProgramHandle;
 
     private int program;
     private int mTextureDataHandle;
@@ -105,6 +124,13 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
                         TextResourceReader.readTextFileFromResource(mainActivity, R.raw.base_vertex_shader)),
                 ShaderHelper.compileFragmentShader(
                         TextResourceReader.readTextFileFromResource(mainActivity, R.raw.base_fragment_shader))
+        );
+
+        mPointProgramHandle = ShaderHelper.linkProgram(
+                ShaderHelper.compileVertexShader(
+                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.point_vertex_shader)),
+                ShaderHelper.compileFragmentShader(
+                        TextResourceReader.readTextFileFromResource(mainActivity, R.raw.point_fragment_shader))
         );
 
         // Load the texture
@@ -184,9 +210,26 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
             }
             hair.genHandle(program, mTextureDataHandleForHair);
             hair.draw();
-            avatar.genHandle(program, mTextureDataHandle);
-            avatar.draw();
+            /*avatar.genHandle(program, mTextureDataHandle);
+            avatar.draw();*/
         }
+
+        // Do a complete rotation every 10 seconds.
+        long time = SystemClock.uptimeMillis() % 10000L;
+        float angleInDegrees = (360.0f / 10000.0f) * ((int) time);
+
+        // Calculate position of the light. Rotate and then push into the distance.
+        Matrix.setIdentityM(mLightModelMatrix, 0);
+        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -5.0f);
+        Matrix.rotateM(mLightModelMatrix, 0, angleInDegrees, 0.0f, 1.0f, 0.0f);
+        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);
+
+        Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
+        Matrix.multiplyMV(mLightPosInEyeSpace, 0, viewMatrix, 0, mLightPosInWorldSpace, 0);
+
+        // Draw a point to indicate the light.
+        GLES20.glUseProgram(mPointProgramHandle);
+        drawLight();
     }
 
     protected void handleGesture() {
@@ -233,5 +276,28 @@ public class BasicRenderer implements GLSurfaceView.Renderer {
             Matrix.rotateM(currentRotation, 0, 45, 0.0f, 0.0f, 1.0f);
             isInitialize = false;
         }
+    }
+
+    /**
+     * Draws a point representing the position of the light.
+     */
+    private void drawLight()
+    {
+        final int pointMVPMatrixHandle = GLES20.glGetUniformLocation(mPointProgramHandle, "u_MVPMatrix");
+        final int pointPositionHandle = GLES20.glGetAttribLocation(mPointProgramHandle, "a_Position");
+
+        // Pass in the position.
+        GLES20.glVertexAttrib3f(pointPositionHandle, mLightPosInModelSpace[0], mLightPosInModelSpace[1], mLightPosInModelSpace[2]);
+
+        // Since we are not using a buffer object, disable vertex arrays for this attribute.
+        GLES20.glDisableVertexAttribArray(pointPositionHandle);
+
+        // Pass in the transformation matrix.
+        Matrix.multiplyMM(mvpMatrix, 0, viewMatrix, 0, mLightModelMatrix, 0);
+        Matrix.multiplyMM(mvpMatrix, 0, projectionMatrix, 0, mvpMatrix, 0);
+        GLES20.glUniformMatrix4fv(pointMVPMatrixHandle, 1, false, mvpMatrix, 0);
+
+        // Draw the point.
+        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, 1);
     }
 }
